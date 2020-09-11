@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contents %}
+<!-- ファイルアップロード -->
+<div class="alert alert-primary  my-3" role="alert">
+    授業データが記載されたExcelファイルをアップロードしてください
+</div>
+<form action="" method="POST" enctype="multipart/form-data">
+    <table>
+        {{ form.as_table }}
+    </table>
+    {% csrf_token %}
+    <button type="submit">ファイルアップロード実行</button>
+</form>
+<div class="mt-3">
+    <p>アップされたファイル名：{{ fname }}</p>
+</div>
+{% endblock contents %}
