@@ -1,15 +1,26 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block contents %}
-<!-- １週間の時間割の形式を決定 -->
-<div class="alert alert-primary  my-3" role="alert">
-    各曜日のコマ数を選んでください
-</div>
-<form class="m-3">
+
+<form action="" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <!-- ファイルアップロード -->
+    <div class="alert alert-primary  my-3" role="alert">
+        授業データが記載されたExcelファイルをアップロードしてください
+    </div>
+    <table>
+        {{ form.as_table }}
+    </table>
+    
+    <!-- １週間の時間割の形式を決定 -->
+    <div class="alert alert-primary  my-3" role="alert">
+        各曜日のコマ数を選んでください
+    </div>
+
     <div class="form-row align-items-center">
         <p>月曜日</p>
         <div class="col-auto">
-            <select class="form-control" id="number" name="number">
+            <select class="form-control" id="mon" name="mon">
                 <option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -23,7 +34,7 @@
         </div>
         <p>火曜日</p>
         <div class="col-auto">
-            <select class="form-control" id="number" name="number">
+            <select class="form-control" id="tue" name="tue">
                 <option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -37,7 +48,7 @@
         </div>
         <p>水曜日</p>
         <div class="col-auto">
-            <select class="form-control" id="number" name="number">
+            <select class="form-control" id="wed" name="wed">
                 <option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -51,7 +62,7 @@
         </div>
         <p>木曜日</p>
         <div class="col-auto">
-            <select class="form-control" id="number" name="number">
+            <select class="form-control" id="thu" name="thu">
                 <option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -65,7 +76,7 @@
         </div>
         <p>金曜日</p>
         <div class="col-auto">
-            <select class="form-control" id="number" name="number">
+            <select class="form-control" id="fri" name="fri">
                 <option value="0">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -79,7 +90,7 @@
         </div>
         <p>土曜日</p>
         <div class="col-auto">
-            <select class="form-control" id="number" name="number">
+            <select class="form-control" id="sat" name="sat">
                 <option value="0" selected="selected">0</option>
                 <option value="1">1</option>
                 <option value="2">2</option>
@@ -92,81 +103,11 @@
             </select>
         </div>
     </div>
-</form>
 
-<!-- ファイルアップロード -->
-<div class="alert alert-primary  my-3" role="alert">
-    授業データが記載されたExcelファイルをアップロードしてください
-</div>
-<form class="m-3">
-    <div class="form-row align-items-center">
-        <div class="col-auto">
-            <input type="file" class="custom-file-input mb-2" id="inputFile">
-            <label class="custom-file-label" for="inputFile">ファイルを選択してください</label>
-        </div>
-        <div class="col-auto">
-            <button onclick="uploadExcel()" type="button" class="btn btn-secondary mb-2">アップロード</button>
-        </div>
+    <!-- 時間割を作成 -->
+    <div class="container my-3">
+        <button type="submit" class="btn btn-primary btn-block">時間割を作成する</button>
     </div>
 </form>
 
-<!-- 教員の都合追加 -->
-<div class="alert alert-primary" role="alert">
-    各教員の休みをとるコマを選択してください
-</div>
-<form class="m-3">
-    <div class="form-row align-items-center">
-        <div class="col-auto">
-            <label class="mr-sm-2 sr-only" for="inlineFormCustomSelect">Preference</label>
-            <select class="custom-select mr-sm-2 mb-2" id="inlineFormCustomSelect">
-                <option value="佐藤" selected>佐藤</option>
-                <option value="鈴木">鈴木</option>
-                <option value="田中">田中</option>
-            </select>
-        </div>
-        <div class="col-auto">
-            <button onclick="teacher()" type="button" class="btn btn-secondary mb-2">追加</button>
-        </div>
-    </div>
-</form>
-
-<!-- マシンの選択 -->
-<div>
-    <div class="alert alert-primary my-3" role="alert">
-        マシンを選択してください
-    </div>
-    <div class="form-check ml-3">
-        <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios1" value="option1" checked>
-        <label class="form-check-label" for="exampleRadios1">
-            SA
-        </label>
-    </div>
-    <div class="form-check ml-3">
-        <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-        <label class="form-check-label" for="exampleRadios2">
-            デジタルアニーラ
-        </label>
-    </div>
-    <div class="form-check ml-3">
-        <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-        <label class="form-check-label" for="exampleRadios2">
-            フィックスターズ
-        </label>
-    </div>
-    <div class="form-check ml-3">
-        <input class="form-check-input" type="radio" name="exampleRadios" id="exampleRadios2" value="option2">
-        <label class="form-check-label" for="exampleRadios2">
-            D-Wave
-        </label>
-    </div>
-    <!-- アクセストークン -->
-    <div class="form-check ml-3 mt-3">
-        <label for="inputPassword5">アクセストークン・APIキー（SAの場合は必要ありません）</label>
-        <input type="password" id="inputPassword5" class="form-control" aria-describedby="passwordHelpBlock">
-    </div>
-</div>
-
-<div class="container my-3">
-    <button onclick="alertResult()" type="button" class="btn btn-primary btn-block">時間割を作成する</button>
-</div>
 {% endblock contents %}
