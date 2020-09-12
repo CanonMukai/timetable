@@ -3,9 +3,6 @@ from django.views.generic import TemplateView
 from .forms import MakeForm
 from .models import Make
 
-class MakeView(TemplateView):
-    template_name = 'make/index.html'
-
 def make(request):
     # ファイルアップロード
     if request.method == 'POST':
