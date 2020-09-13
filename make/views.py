@@ -15,6 +15,9 @@ def make(request):
         fri = int(request.POST['fri'])
         sat = int(request.POST['sat'])
         form = MakeForm(request.POST, request.FILES)
+        if TimeTable.objects.filter(school_id=0).exists():
+            t = TimeTable.objects.get(school_id=0)
+            t.delete()
         timetable = TimeTable(
             school_id=0, 
             file_name=request.FILES['file'], 
