@@ -4,6 +4,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from .forms import MakeForm
 from .models import Make, TimeTable
+from .functions import *
 import json
 
 def make(request):
@@ -16,13 +17,29 @@ def make(request):
         thu = int(request.POST['thu'])
         fri = int(request.POST['fri'])
         sat = int(request.POST['sat'])
+        shape = [mon, tue,  wed, thu, fri, sat]
+        table = []
+        weekly = 0
+        for koma in shape:
+            if koma != 0:
+                table.append([])
+                for i in range(koma):
+                    table[-1].append(weekly)
+                    weekly += 1
+        fname = 'make/files/'+str(request.FILES['file'])
+        cell_list = CellList(fname, sheet_num=0)
+        class_dict = ClassDict(cell_list)
+        teacher = TeacherName(class_dict)
         if TimeTable.objects.filter(school_id=0).exists():
             t = TimeTable.objects.get(school_id=0)
             t.delete()
         timetable = TimeTable(
             school_id=0, 
-            file_name=request.FILES['file'], 
-            table=json.dumps([mon, tue, wed, thu, fri, sat])
+            file_name=fname, 
+            table=json.dumps(table),
+            cell_list=json.dumps(cell_list),
+            teacher_list=json.dumps(teacher),
+            weekly=weekly
         )
         timetable.save()
         form = MakeForm(request.POST, request.FILES)
@@ -40,4 +57,14 @@ def handle_uploaded_file(f):
             destination.write(chunk)
 
 def constraint(request):
-    return render(request, 'make/constraint.html')
+    t = TimeTable.objects.get(school_id=0)
+    teacher = json.loads(t.teacher_list)
+    if request.method == 'POST':
+        if 'add' in request.POST:
+            return render(request, 'make/constraint.html', {'teacher': teacher})
+        elif 'make' in request.POST:
+            koma_data = KomaData(t)
+            print(koma_data)
+            return render(request, 'make/constraint.html', {'teacher': teacher})
+    else:
+        return render(request, 'make/constraint.html', {'teacher': teacher})

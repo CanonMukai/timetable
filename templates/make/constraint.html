@@ -4,11 +4,64 @@
 
 <form action="" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
-    
+    <!-- 教員の都合追加 -->
+    <div class="alert alert-primary" role="alert">
+        各教員の休みをとるコマを選択してください
+    </div>
+    <div class="form-row align-items-center">
+        <div class="col-auto ml-3">
+            <label class="mr-sm-2 sr-only" for="teacher">Preference</label>
+            <select class="custom-select mr-sm-2 mb-2" id="teacher" name="teacher">
+                {% for t in teacher %}
+                <option value="{{ t }}">{{ t }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-secondary mb-2" name="add">追加</button>
+        </div>
+    </div>
+
+    <!-- マシンの選択 -->
+    <div>
+        <div class="alert alert-primary my-3" role="alert">
+            マシンを選択してください
+        </div>
+        <div class="form-check ml-3">
+            <input class="form-check-input" type="radio" name="machine" id="sa" value="sa"
+                checked>
+            <label class="form-check-label" for="sa">
+                SA
+            </label>
+        </div>
+        <div class="form-check ml-3">
+            <input class="form-check-input" type="radio" name="machine" id="da" value="da">
+            <label class="form-check-label" for="da">
+                デジタルアニーラ
+            </label>
+        </div>
+        <div class="form-check ml-3">
+            <input class="form-check-input" type="radio" name="machine" id="fix" value="fix">
+            <label class="form-check-label" for="fix">
+                フィックスターズ
+            </label>
+        </div>
+        <div class="form-check ml-3">
+            <input class="form-check-input" type="radio" name="machine" id="dw" value="dw">
+            <label class="form-check-label" for="dw">
+                D-Wave
+            </label>
+        </div>
+        <!-- アクセストークン -->
+        <div class="form-check ml-3 mt-3">
+            <label for="inputPassword5">アクセストークン・APIキー（SAの場合は必要ありません）</label>
+            <input type="password" id="token" class="form-control" aria-describedby="passwordHelpBlock" name="token" value="">
+        </div>
+    </div>
 
     <!-- 時間割を作成 -->
     <div class="container my-3">
-        <button type="submit" class="btn btn-primary btn-block">確定する</button>
+        <button type="submit" class="btn btn-primary btn-block" name="make">時間割を作成する</button>
     </div>
 </form>
 
