@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contents %}
+
+<form action="" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+
+    <!-- 時間割を作成 -->
+    <div class="container my-3">
+        <button type="submit" class="btn btn-primary btn-block">確定する</button>
+    </div>
+</form>
+
+{% endblock contents %}
