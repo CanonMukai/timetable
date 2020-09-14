@@ -65,6 +65,9 @@ def constraint(request):
         elif 'make' in request.POST:
             koma_data = KomaData(t)
             print(koma_data)
-            return render(request, 'make/constraint.html', {'teacher': teacher})
+            return HttpResponseRedirect(reverse('make:success'))
     else:
         return render(request, 'make/constraint.html', {'teacher': teacher})
+
+def success(request):
+    return render(request, 'make/success.html')
