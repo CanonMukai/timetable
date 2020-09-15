@@ -12,4 +12,6 @@ class TimeTable(models.Model):
     table = models.TextField(null=True)
     cell_list = models.TextField(null=True)
     teacher_list = models.TextField(null=True)
+    class_list = models.TextField(null=True)
     weekly = models.IntegerField(null=True)
+    class_table_list = models.TextField(null=True)
