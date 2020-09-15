@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import openpyxl
 import json
 import numpy as np
@@ -178,6 +179,7 @@ def search(table, koma):
             j += 1
             
 def ClassName(class_dict):
+    total = len(class_dict)
     class_name = set()
     for i in range(total):
         for name in class_dict[i]['CLASS']:
@@ -200,7 +202,7 @@ def ClassTable(koma_data, class_dict, class_name, table):
     class_table = {}
     for name in class_name:
         # tableの形によるかも
-        class_table[name] = [[None] * len(table) for i in range(len(table[0]))]
+        class_table[name] = [[""] * len(table) for i in range(len(table[0]))]
     total = len(class_dict)
     #for ID in range(total):
     for ID in koma_data:
@@ -279,11 +281,9 @@ def MakeExcelFile(output_file, class_dict, koma_data, table, weekly):
 
     wb.save(output_file)
 
-def KomaData(model):
-    cell_list = json.loads(model.cell_list)
-    class_dict = ClassDict(cell_list)
-    total = len(class_dict)
+def KomaDataList(model, class_dict):
     adjacent = Adjacent(class_dict)
+    total = len(class_dict)
     convenience = []
     renzoku_koma = []
     renzoku_ID = []
@@ -307,6 +307,7 @@ def KomaData(model):
         w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6, w7=w7, w8=w8)
     solver = neal.SimulatedAnnealingSampler()
     response = solver.sample_qubo(Q, num_sweeps=1000, num_reads=10)
+    koma_data_list = []
     for sample0, energy0 in response.data(fields=['sample', 'energy']):
         koma_data = {}
         for key, val in sample0.items():
@@ -314,4 +315,15 @@ def KomaData(model):
                 i = key // model.weekly
                 a = key % model.weekly
                 koma_data[i] = a
-    return koma_data
+        koma_data_list.append(koma_data)
+    return koma_data_list
+
+def ClassTableList(model):
+    cell_list = json.loads(model.cell_list)
+    class_dict = ClassDict(cell_list)
+    koma_data_list = KomaDataList(model, class_dict)
+    class_table_list = []
+    for koma_data in koma_data_list:
+        class_table = ClassTable(koma_data, class_dict, json.loads(model.class_list), json.loads(model.table))
+        class_table_list.append(class_table)
+    return class_table_list

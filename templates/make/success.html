@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block contents %}
+<div class="container">
+    {% for table in tables %}
+    <div class="alert alert-success mt-3" role="alert">
+        時間割の候補
+    </div>
+    {% for key, value in table.items %}
+    <table class="table table-bordered" style="table-layout:fixed;">
+        <thead>
+            <tr>
+                <th scope="col">{{ key }}</th>
+                {% for day in days %}
+                <th scope="col" style="width:205px;">{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for gyou in value %}
+            <tr>
+                <th scope="row"></th>
+                {% for info in gyou %}
+                <td style="word-wrap:break-word;">{{ info }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endfor %}
+    {% endfor %}
+    <br>
+</div>
+{% endblock contents %}
