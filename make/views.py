@@ -107,11 +107,24 @@ def success(request):
     for komas in table:
         max_koma = max(max_koma, len(komas))
     gens = [i+1 for i in range(max_koma)]
-    class_table_list = t.class_table_list
+    class_table_list = ast.literal_eval(t.class_table_list)
+    new_class_table_list = changed(class_table_list)
     params = {
         'days': ['月', '火', '水', '木', '金', '土'][:length],
         'gens': gens,
         'classes': json.loads(t.class_list),
-        'tables': ast.literal_eval(class_table_list)
+        'tables': new_class_table_list
     }
     return render(request, 'make/success.html', params)
+
+def changed(class_table_list):
+    new_one = []
+    for class_table in class_table_list:
+        new_one.append({})
+        for key, value in class_table.items():
+            new_one[-1][key] = {}
+            i = 1
+            for v in value:
+                new_one[-1][key][i] = v
+                i += 1
+    return new_one
