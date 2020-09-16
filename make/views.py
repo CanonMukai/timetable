@@ -67,6 +67,9 @@ def constraint(request):
         if 'add' in request.POST:
             return render(request, 'make/constraint.html', {'teacher': teacher})
         elif 'make' in request.POST:
+            t.steps = int(request.POST['steps'])
+            t.reads = int(request.POST['reads'])
+            t.save()
             class_table_list = ClassTableList(t)
             t.class_table_list = json.dumps(class_table_list)
             t.save()

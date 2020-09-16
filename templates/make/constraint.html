@@ -5,7 +5,7 @@
 <form action="" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <!-- 教員の都合追加 -->
-    <div class="alert alert-primary" role="alert">
+    <div class="alert alert-primary mt-3" role="alert">
         各教員の休みをとるコマを選択してください
     </div>
     <div class="form-row align-items-center">
@@ -28,8 +28,7 @@
             マシンを選択してください
         </div>
         <div class="form-check ml-3">
-            <input class="form-check-input" type="radio" name="machine" id="sa" value="sa"
-                checked>
+            <input class="form-check-input" type="radio" name="machine" id="sa" value="sa" checked>
             <label class="form-check-label" for="sa">
                 SA
             </label>
@@ -55,7 +54,20 @@
         <!-- アクセストークン -->
         <div class="form-check ml-3 mt-3">
             <label for="inputPassword5">アクセストークン・APIキー（SAの場合は必要ありません）</label>
-            <input type="password" id="token" class="form-control" aria-describedby="passwordHelpBlock" name="token" value="">
+            <input type="password" id="token" class="form-control" aria-describedby="passwordHelpBlock" name="token"
+                value="">
+        </div>
+    </div>
+
+    <!-- ステップ数、繰り返し数 -->
+    <div class="row m-3">
+        <div class="col">
+            <label for="steps">ステップ数</label>
+            <input type="number" class="form-control" id="steps" name="steps" value="1000">
+        </div>
+        <div class="col">
+            <label for="reads">繰り返し数</label>
+            <input type="number" class="form-control" id="reads" name="reads" value="10">
         </div>
     </div>
 

@@ -14,4 +14,6 @@ class TimeTable(models.Model):
     teacher_list = models.TextField(null=True)
     class_list = models.TextField(null=True)
     weekly = models.IntegerField(null=True)
+    steps = models.IntegerField(default=1000)
+    reads = models.IntegerField(default=10)
     class_table_list = models.TextField(null=True)

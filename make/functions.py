@@ -306,7 +306,7 @@ def KomaDataList(model, class_dict):
         renzoku_2koma, not_renzoku_ID,
         w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6, w7=w7, w8=w8)
     solver = neal.SimulatedAnnealingSampler()
-    response = solver.sample_qubo(Q, num_sweeps=1000, num_reads=10)
+    response = solver.sample_qubo(Q, num_sweeps=model.steps, num_reads=model.reads)
     koma_data_list = []
     for sample0, energy0 in response.data(fields=['sample', 'energy']):
         koma_data = {}
