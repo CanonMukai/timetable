@@ -60,12 +60,34 @@ def handle_uploaded_file(f):
         for chunk in f.chunks():
             destination.write(chunk)
 
+days = ['月', '火', '水', '木', '金', '土']
+
 def constraint(request):
     t = TimeTable.objects.get(school_id=0)
     teacher = json.loads(t.teacher_list)
+    table = json.loads(t.table)
+    max_koma = 0
+    for komas in table:
+        max_koma = max(max_koma, len(komas))
+    length = len(table)
+    table_dict = {}
+    for i in range(max_koma):
+        table_dict[i+1] = [""] * length
+    i = 0
+    for day in table:
+        j = 0
+        for gen in day:
+            table_dict[j + 1][i] = {gen: days[i] + str(j+1)}
+            j += 1
+        i += 1
+    params = {
+        'teacher': teacher,
+        'days': ['月', '火', '水', '木', '金', '土'][:length],
+        'tabledict': table_dict
+    }
     if request.method == 'POST':
         if 'add' in request.POST:
-            return render(request, 'make/constraint.html', {'teacher': teacher})
+            return render(request, 'make/constraint.html', params)
         elif 'make' in request.POST:
             t.steps = int(request.POST['steps'])
             t.reads = int(request.POST['reads'])
@@ -75,7 +97,7 @@ def constraint(request):
             t.save()
             return HttpResponseRedirect(reverse('make:success'))
     else:
-        return render(request, 'make/constraint.html', {'teacher': teacher})
+        return render(request, 'make/constraint.html', params)
 
 def success(request):
     t = TimeTable.objects.get(school_id=0)
@@ -87,7 +109,7 @@ def success(request):
     gens = [i+1 for i in range(max_koma)]
     class_table_list = t.class_table_list
     params = {
-        'days': ['月', '火', '水', '木', '金'][:length],
+        'days': ['月', '火', '水', '木', '金', '土'][:length],
         'gens': gens,
         'classes': json.loads(t.class_list),
         'tables': ast.literal_eval(class_table_list)

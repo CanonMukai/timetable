@@ -6,7 +6,7 @@
     {% csrf_token %}
     <!-- 教員の都合追加 -->
     <div class="alert alert-primary mt-3" role="alert">
-        各教員の休みをとるコマを選択してください
+        教員名とその教員が休みをとるコマを選択し、「追加」を押してください
     </div>
     <div class="form-row align-items-center">
         <div class="col-auto ml-3">
@@ -20,6 +20,37 @@
         <div class="col-auto">
             <button type="submit" class="btn btn-secondary mb-2" name="add">追加</button>
         </div>
+    </div>
+    <div class="container">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col"></th>
+                    {% for day in days %}
+                    <th scope="col">{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            {% for gen, infos in tabledict.items %}
+            <tbody>
+                <tr>
+                    <th scope="row">{{ gen }}</th>
+                    {% for info in infos %}
+                    <td>
+                        {% if info %}
+                        {% for key, value in info.items %}
+                        <div class="text-center">
+                            <input class="form-check-input" type="checkbox" value="{{ key }}" name="rest">
+                            <label class="form-check-label" for="mon1">{{ value }}</label>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+            {% endfor %}
+        </table>
     </div>
 
     <!-- マシンの選択 -->
@@ -57,17 +88,16 @@
             <input type="password" id="token" class="form-control" aria-describedby="passwordHelpBlock" name="token"
                 value="">
         </div>
-    </div>
-
-    <!-- ステップ数、繰り返し数 -->
-    <div class="row m-3">
-        <div class="col">
-            <label for="steps">ステップ数</label>
-            <input type="number" class="form-control" id="steps" name="steps" value="1000">
-        </div>
-        <div class="col">
-            <label for="reads">繰り返し数</label>
-            <input type="number" class="form-control" id="reads" name="reads" value="10">
+        <!-- ステップ数、繰り返し数 -->
+        <div class="row ml-3 mt-3">
+            <div class="col">
+                <label for="steps">ステップ数</label>
+                <input type="number" class="form-control" id="steps" name="steps" value="1000">
+            </div>
+            <div class="col">
+                <label for="reads">繰り返し数</label>
+                <input type="number" class="form-control" id="reads" name="reads" value="10">
+            </div>
         </div>
     </div>
 
