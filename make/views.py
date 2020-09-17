@@ -34,7 +34,7 @@ def make(request):
             fname = 'make/files/'+str(request.FILES['file'])
             cell_list = CellList(fname, sheet_num=0)
             class_dict = ClassDict(cell_list)
-            teacher = TeacherName(class_dict)
+            teacher_list = TeacherName(class_dict)
             class_list = ClassName(class_dict)
             if TimeTable.objects.filter(school_id=0).exists():
                 t = TimeTable.objects.get(school_id=0)
@@ -44,7 +44,7 @@ def make(request):
                 file_name=fname, 
                 table=json.dumps(table),
                 cell_list=json.dumps(cell_list),
-                teacher_list=json.dumps(teacher),
+                teacher_list=json.dumps(teacher_list),
                 class_list=json.dumps(class_list),
                 weekly=weekly
             )
@@ -64,7 +64,7 @@ days = ['月', '火', '水', '木', '金', '土']
 
 def constraint(request):
     t = TimeTable.objects.get(school_id=0)
-    teacher = json.loads(t.teacher_list)
+    teacher_list = json.loads(t.teacher_list)
     table = json.loads(t.table)
     max_koma = 0
     for komas in table:
@@ -81,16 +81,34 @@ def constraint(request):
             j += 1
         i += 1
     params = {
-        'teacher': teacher,
+        'teacher': teacher_list,
         'days': ['月', '火', '水', '木', '金', '土'][:length],
         'tabledict': table_dict
     }
     if request.method == 'POST':
         if 'add' in request.POST:
+            # 先生の都合の取得
+            con = ast.literal_eval(t.convenience)
+            teacher = request.POST['teacher']
+            con[teacher] = []
+            for i in range(t.weekly):
+                if str(i) in request.POST:
+                    con[teacher].append(i)
+            t.convenience = json.dumps(con)
+            t.save()
             return render(request, 'make/constraint.html', params)
         elif 'make' in request.POST:
             t.steps = int(request.POST['steps'])
             t.reads = int(request.POST['reads'])
+            # convenienceの中に空リストの先生がいたら削除する
+            con = ast.literal_eval(t.convenience)
+            delete = []
+            for key, value in con.items():
+                if not value:
+                    delete.append(key)
+            for key in delete:
+                con.pop(key)
+            t.convenience = json.dumps(con)
             t.save()
             class_table_list = ClassTableList(t)
             t.class_table_list = json.dumps(class_table_list)

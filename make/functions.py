@@ -3,6 +3,7 @@ import openpyxl
 import json
 import numpy as np
 import neal
+import ast
 
 def CellList(excel_file, sheet_num=0):
     """
@@ -106,12 +107,10 @@ def Hamiltonian(class_dict,
                     A[k1, k2] += (w2 + plus2)
     # 第3項：制約条件（教員の都合を反映）
     for con in convenience:
-        # convenience：[ID, c, w(>0)]
-        i, a, w = con[0], con[1], con[2]
+        # convenience：[[ID, c], [ID, c], ...]
+        i, a = con[0], con[1]
         k = weekly * i + a
-        A[k, k] += w*w3  # w > 0 : 避けたい,  w < 0 : 入りたい
-        if w < 0:
-            constant -= w*w3
+        A[k, k] += w3
     # 第4項：制約条件（2時間続きにしたい授業）
     for IDs in renzoku_ID:
         constant += w4
@@ -284,7 +283,7 @@ def MakeExcelFile(output_file, class_dict, koma_data, table, weekly):
 def KomaDataList(model, class_dict):
     adjacent = Adjacent(class_dict)
     total = len(class_dict)
-    convenience = []
+    convenience = Convenience(model, class_dict)
     renzoku_koma = []
     renzoku_ID = []
     one_per_day = []
@@ -327,3 +326,13 @@ def ClassTableList(model):
         class_table = ClassTable(koma_data, class_dict, json.loads(model.class_list), json.loads(model.table))
         class_table_list.append(class_table)
     return class_table_list
+
+def Convenience(model, class_dict):
+    convenience = []
+    con = ast.literal_eval(model.convenience)
+    for ID, info in class_dict.items():
+        for teacher in con:
+            if teacher in info['TEACHER']:
+                for koma in con[teacher]:
+                    convenience.append([ID, koma])
+    return convenience

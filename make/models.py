@@ -1,4 +1,5 @@
 from django.db import models
+import json
 
 class Make(models.Model):
     file = models.FileField('ファイル')
@@ -14,6 +15,7 @@ class TimeTable(models.Model):
     teacher_list = models.TextField(null=True)
     class_list = models.TextField(null=True)
     weekly = models.IntegerField(null=True)
+    convenience = models.TextField(default=json.dumps({}))
     steps = models.IntegerField(default=1000)
     reads = models.IntegerField(default=10)
     class_table_list = models.TextField(null=True)

@@ -40,7 +40,7 @@
                         {% if info %}
                         {% for key, value in info.items %}
                         <div class="text-center">
-                            <input class="form-check-input" type="checkbox" value="{{ key }}" name="rest">
+                            <input class="form-check-input" type="checkbox" value="{{ key }}" name="{{ key }}">
                             <label class="form-check-label" for="mon1">{{ value }}</label>
                         </div>
                         {% endfor %}
