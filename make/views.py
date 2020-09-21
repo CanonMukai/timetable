@@ -9,6 +9,9 @@ from .functions import *
 import json
 import ast
 
+def top(request):
+    return render(request, 'make/top.html')
+
 def make(request):
     # ファイルアップロード
     if request.method == 'POST':

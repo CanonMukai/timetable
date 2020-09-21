@@ -15,12 +15,12 @@
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container">
                 <div class="collapse navbar-collapse" id="navbarToggle">
-                    <a class="nav-item nav-link" href="">トップ</a>
+                    <a class="nav-item nav-link" href="{% url 'make:top' %}">トップ</a>
                 </div>
                 <div class="navbar-nav">
                     <a class="nav-item nav-link" href="{% url 'make:make' %}">時間割作成</a>
-                    <a class="nav-item nav-link" href="">操作の説明</a>
-                    <a class="nav-item nav-link" href="">Q&A</a>
+                    <a class="nav-item nav-link" href="{% url 'make:top' %}">操作の説明</a>
+                    <a class="nav-item nav-link" href="{% url 'make:top' %}">Q&A</a>
                 </div>
             </div>
         </nav>
