@@ -11,10 +11,10 @@
     <table>
         {{ form.as_table }}
     </table>
-    
+
     <!-- １週間の時間割の形式を決定 -->
     <div class="alert alert-primary my-3" role="alert">
-        各曜日のコマ数を選んでください
+        各曜日のコマ数を選んでください。またお昼休みが何限と何限の間かを選択してください
     </div>
 
     <div class="form-row align-items-center m-3">
@@ -100,6 +100,17 @@
                 <option value="6">6</option>
                 <option value="7">7</option>
                 <option value="8">8</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row align-items-center m-3">
+        <p>お昼休み</p>
+        <div class="col-auto">
+            <select class="form-control" id="lunch" name="lunch">
+                <option value="2">2限と3限の間</option>
+                <option value="3">3限と4限の間</option>
+                <option value="4" selected="selected">4限と5限の間</option>
+                <option value="5">5限と6限の間</option>
             </select>
         </div>
     </div>

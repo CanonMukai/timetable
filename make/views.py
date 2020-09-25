@@ -34,6 +34,8 @@ def make(request):
                     for i in range(koma):
                         table[-1].append(weekly)
                         weekly += 1
+            # お昼休みの時間
+            lunch_after = int(request.POST['lunch'])
             fname = 'make/files/'+str(request.FILES['file'])
             cell_list = CellList(fname, sheet_num=0)
             class_dict = ClassDict(cell_list)
@@ -46,6 +48,7 @@ def make(request):
                 school_id=0, 
                 file_name=fname, 
                 table=json.dumps(table),
+                lunch_after=lunch_after,
                 cell_list=json.dumps(cell_list),
                 teacher_list=json.dumps(teacher_list),
                 class_list=json.dumps(class_list),

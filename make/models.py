@@ -11,6 +11,7 @@ class TimeTable(models.Model):
     school_id = models.IntegerField(unique=True, default=0)
     file_name = models.CharField(max_length=70)
     table = models.TextField(null=True)
+    lunch_after = models.IntegerField(null=True)
     cell_list = models.TextField(null=True)
     teacher_list = models.TextField(null=True)
     class_list = models.TextField(null=True)
