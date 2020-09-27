@@ -286,12 +286,12 @@ def KomaDataList(model, class_dict):
     convenience = Convenience(model, class_dict)
     renzoku_koma = []
     renzoku_ID = []
-    one_per_day = []
-    joint = []
-    gen_list = []
-    one_per_gen = []
-    renzoku_2koma = []
-    not_renzoku_ID = []
+    one_per_day = OnePerGen(model, class_dict)
+    joint = Joint()
+    gen_list = GenList(model)
+    one_per_gen = OnePerGen(model, class_dict)
+    renzoku_2koma = Renzoku2Koma()
+    not_renzoku_ID = NotRenzokuID()
     w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 4, 1, 6, 1, 5
     Q, constant, A = Hamiltonian(
         class_dict,
@@ -336,3 +336,43 @@ def Convenience(model, class_dict):
                 for koma in con[teacher]:
                     convenience.append([ID, koma])
     return convenience
+
+def OnePerDay():
+    return []
+
+def Joint():
+    return []
+
+def GenList(model):
+    gen_list = [[], []]
+    table = json.loads(model.table)
+    lunch_after = model.lunch_after
+    min_class = 100
+    for t in table:
+        min_class = min(min_class, len(t))
+    for t in table:
+        gen_list[0].append(t[0])
+        if lunch_after > 0 and lunch_after < min_class:
+            gen_list[1].append(t[lunch_after])
+    return gen_list
+
+# one_per_dayもこの関数でやっている
+# 今後はOnePerDayを別に定義することも検討
+def OnePerGen(model, class_dict):
+    classes = {}
+    for ID, infomation in class_dict.items():
+        info = infomation["NAME"] + str(infomation["CLASS"])
+        if info in classes:
+            classes[info].append(ID)
+        else:
+            classes[info] = [ID]
+    one_per_gen = []
+    for c, class_list in classes.items():
+        one_per_gen.append(class_list)
+    return one_per_gen
+
+def Renzoku2Koma():
+    return []
+
+def NotRenzokuID():
+    return []
