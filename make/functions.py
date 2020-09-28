@@ -4,6 +4,7 @@ import json
 import numpy as np
 import neal
 import ast
+import itertools
 
 def CellList(excel_file, sheet_num=0):
     """
@@ -284,14 +285,15 @@ def KomaDataList(model, class_dict):
     adjacent = Adjacent(class_dict)
     total = len(class_dict)
     convenience = Convenience(model, class_dict)
-    renzoku_koma = []
+    renzoku_koma = Renzoku2Koma(model)
     renzoku_ID = []
     one_per_day = OnePerGen(model, class_dict)
     joint = Joint()
     gen_list = GenList(model)
-    one_per_gen = OnePerGen(model, class_dict)
-    renzoku_2koma = Renzoku2Koma()
-    not_renzoku_ID = NotRenzokuID()
+    # TODO: OnePerDay()
+    one_per_gen = one_per_day
+    renzoku_2koma = Renzoku2Koma(model)
+    not_renzoku_ID = NotRenzokuID(model, class_dict)
     w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 4, 1, 6, 1, 5
     Q, constant, A = Hamiltonian(
         class_dict,
@@ -356,8 +358,6 @@ def GenList(model):
             gen_list[1].append(t[lunch_after])
     return gen_list
 
-# one_per_dayもこの関数でやっている
-# 今後はOnePerDayを別に定義することも検討
 def OnePerGen(model, class_dict):
     classes = {}
     for ID, infomation in class_dict.items():
@@ -371,8 +371,27 @@ def OnePerGen(model, class_dict):
         one_per_gen.append(class_list)
     return one_per_gen
 
-def Renzoku2Koma():
-    return []
+def Renzoku2Koma(model):
+    table = json.loads(model.table)
+    lunch_after = model.lunch_after
+    renzoku_2koma = []
+    for day in table:
+        for gen in range(len(day) - 1):
+            if gen != lunch_after - 1:
+                renzoku_2koma.append([day[gen], day[gen + 1]])
+    return renzoku_2koma
 
-def NotRenzokuID():
-    return []
+def NotRenzokuID(model, class_dict):
+    classes = {}
+    for ID, infomation in class_dict.items():
+        teachers = infomation["TEACHER"]
+        for teacher in teachers:
+            if teacher in classes:
+                classes[teacher].append(ID)
+            else:
+                classes[teacher] = [ID]
+    not_renzoku_ID = []
+    for c, class_list in classes.items():
+        not_renzoku_ID.append(class_list)
+    print(not_renzoku_ID)
+    return not_renzoku_ID
