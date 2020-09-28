@@ -393,5 +393,4 @@ def NotRenzokuID(model, class_dict):
     not_renzoku_ID = []
     for c, class_list in classes.items():
         not_renzoku_ID.append(class_list)
-    print(not_renzoku_ID)
     return not_renzoku_ID
