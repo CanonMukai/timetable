@@ -316,7 +316,9 @@ def KomaDataList(model, class_dict):
                 i = key // model.weekly
                 a = key % model.weekly
                 koma_data[i] = a
-        koma_data_list.append(koma_data)
+        # 基本制約を満たしているか判定
+        if is_satisfied_2(koma_data, total) and is_satisfied_1(adjacent, joint, koma_data):
+            koma_data_list.append(koma_data)
     return koma_data_list
 
 def ClassTableList(model):
@@ -394,3 +396,29 @@ def NotRenzokuID(model, class_dict):
     for c, class_list in classes.items():
         not_renzoku_ID.append(class_list)
     return not_renzoku_ID
+
+# 制約破り判定
+# 第1項：グラフで繋がれた授業が被っていない
+def is_satisfied_1(adjacent, joint, koma_data):
+    broken = []
+    satisfied = True
+    for i in adjacent:
+        for j in adjacent[i]:
+            if koma_data[i] == koma_data[j] and tuple(sorted([i, j])) not in joint:
+                satisfied = False
+                broken.append((i, j))
+    if broken:
+        # TODO: print()消す
+        print("制約1破り：重なってはいけないのに重なっている授業IDの組")
+        print(broken)
+    return satisfied
+
+# 第2項：１つの科目に１つのコマしか割り当てない
+def is_satisfied_2(koma_data, total):
+    if len(koma_data) == total:
+        return True
+    else:
+        # TODO: print()消す
+        print("制約2破り：コマが割り当てられていない授業IDの個数")
+        print(str(total - len(koma_data)) + "個")
+        return False
