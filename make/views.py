@@ -141,8 +141,6 @@ def success(request):
             'tables': new_class_table_list
         }
         return render(request, 'make/success.html', params)
-    # else:
-    #     return 
 
 def changed(class_table_list):
     new_one = []
