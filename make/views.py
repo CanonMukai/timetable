@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse # TODO: HttpResponseを消す
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -124,22 +124,25 @@ def constraint(request):
         return render(request, 'make/constraint.html', params)
 
 def success(request):
-    t = TimeTable.objects.get(school_id=0)
-    table = json.loads(t.table)
-    length = len(table)
-    max_koma = 0
-    for komas in table:
-        max_koma = max(max_koma, len(komas))
-    gens = [i+1 for i in range(max_koma)]
-    class_table_list = ast.literal_eval(t.class_table_list)
-    new_class_table_list = changed(class_table_list)
-    params = {
-        'days': ['月', '火', '水', '木', '金', '土'][:length],
-        'gens': gens,
-        'classes': json.loads(t.class_list),
-        'tables': new_class_table_list
-    }
-    return render(request, 'make/success.html', params)
+    if request.method == "GET":
+        t = TimeTable.objects.get(school_id=0)
+        table = json.loads(t.table)
+        length = len(table)
+        max_koma = 0
+        for komas in table:
+            max_koma = max(max_koma, len(komas))
+        gens = [i+1 for i in range(max_koma)]
+        class_table_list = ast.literal_eval(t.class_table_list)
+        new_class_table_list = changed(class_table_list)
+        params = {
+            'days': ['月', '火', '水', '木', '金', '土'][:length],
+            'gens': gens,
+            'classes': json.loads(t.class_list),
+            'tables': new_class_table_list
+        }
+        return render(request, 'make/success.html', params)
+    # else:
+    #     return 
 
 def changed(class_table_list):
     new_one = []
@@ -152,3 +155,9 @@ def changed(class_table_list):
                 new_one[-1][key][i] = v
                 i += 1
     return new_one
+
+def changed_for_success(class_table_list):
+    return
+
+def each_table(request, table_id):
+    return HttpResponse("timetable %s." % table_id)

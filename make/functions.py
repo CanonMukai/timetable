@@ -284,6 +284,7 @@ def MakeExcelFile(output_file, class_dict, koma_data, table, weekly):
 def KomaDataList(model, class_dict):
     adjacent = Adjacent(class_dict)
     total = len(class_dict)
+    table = json.loads(model.table)
     convenience = Convenience(model, class_dict)
     renzoku_koma = Renzoku2Koma(model)
     renzoku_ID = []
@@ -293,7 +294,9 @@ def KomaDataList(model, class_dict):
     # TODO: OnePerDay()
     one_per_gen = one_per_day
     renzoku_2koma = Renzoku2Koma(model)
+    renzoku_3koma = Renzoku3Koma(model)
     not_renzoku_ID = NotRenzokuID(model, class_dict)
+    perfect_score = PerfectScore()
     w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 4, 1, 6, 1, 5
     Q, constant, A = Hamiltonian(
         class_dict,
@@ -316,9 +319,24 @@ def KomaDataList(model, class_dict):
                 i = key // model.weekly
                 a = key % model.weekly
                 koma_data[i] = a
-        # 基本制約を満たしているか判定
+        # 基本制約を満たしていれば次のステップ(得点の計算)へ
         if is_satisfied_2(koma_data, total) and is_satisfied_1(adjacent, joint, koma_data):
-            koma_data_list.append(koma_data)
+            broken3 = is_satisfied_3(convenience, koma_data)
+            broken4 = is_satisfied_4(renzoku_ID, renzoku_koma, koma_data)
+            broken5 = is_satisfied_5(one_per_day, table, koma_data)
+            broken6 = is_satisfied_6(joint, koma_data)
+            broken7 = is_satisfied_7(one_per_gen, gen_list, koma_data)
+            broken8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
+            score_for_students = ScoreForStudents()
+            score_for_teachers = ScoreForTeachers()
+            sum_of_scores = sum([score_for_students, score_for_teachers])
+            koma_data_list.append({
+                'koma_data': koma_data,
+                'sum': sum_of_scores,
+                'students': score_for_students,
+                'teachers': score_for_teachers
+            })
+    koma_data_list.sort(key=lambda x: -x['sum'])
     return koma_data_list
 
 def ClassTableList(model):
@@ -326,7 +344,8 @@ def ClassTableList(model):
     class_dict = ClassDict(cell_list)
     koma_data_list = KomaDataList(model, class_dict)
     class_table_list = []
-    for koma_data in koma_data_list:
+    for info in koma_data_list:
+        koma_data = info['koma_data']
         class_table = ClassTable(koma_data, class_dict, json.loads(model.class_list), json.loads(model.table))
         class_table_list.append(class_table)
     return class_table_list
@@ -383,6 +402,17 @@ def Renzoku2Koma(model):
                 renzoku_2koma.append([day[gen], day[gen + 1]])
     return renzoku_2koma
 
+def Renzoku3Koma(model):
+    table = json.loads(model.table)
+    lunch_after = model.lunch_after
+    renzoku_3koma = []
+    for day in table:
+        for gen in range(len(day) - 2):
+            if gen != lunch_after - 1 and gen != lunch_after - 2:
+                renzoku_3koma.append([day[gen], day[gen + 1], day[gen + 2]])
+    print(renzoku_3koma)
+    return renzoku_3koma
+
 def NotRenzokuID(model, class_dict):
     classes = {}
     for ID, infomation in class_dict.items():
@@ -422,3 +452,104 @@ def is_satisfied_2(koma_data, total):
         print("制約2破り：コマが割り当てられていない授業IDの個数")
         print(str(total - len(koma_data)) + "個")
         return False
+
+# 第3項：教員の都合を反映
+# 以下第8項まで、jupyterのときと違いsatisfiedではなくbrokenを返すことにする
+def is_satisfied_3(convenience, koma_data):
+    broken = []
+    for con in convenience:
+        ID, koma = con[0], con[1]
+        if koma_data[ID] == koma:
+            broken.append("ID: {}, コマ: {}".format(ID, koma))
+    if broken:
+        print("制約3破り：都合が反映されていない授業IDとそのコマ")
+        print(broken)
+    return broken
+
+# 第4項：2時間続きにしたい授業
+def is_satisfied_4(renzoku_ID, renzoku_koma, koma_data):
+    broken = []
+    for IDs in renzoku_ID:
+        #if abs(koma_data[IDs[0]] - koma_data[IDs[1]]) != 1:
+        if sorted([koma_data[IDs[0]], koma_data[IDs[1]]]) not in renzoku_koma:
+            broken.append((IDs[0], IDs[1]))
+    if broken:
+        print("制約4破り：2時間続きになっていない授業IDの組")
+        print(broken)
+    return broken
+
+# 第5項：各科目は1日1コマ
+def is_satisfied_5(one_per_day, table, koma_data):
+    broken = set()
+    for IDs in one_per_day:
+        for day in table:
+            times = 0
+            for ID in IDs:
+                if koma_data[ID] in day:
+                    times += 1
+            if times > 1:
+                broken.add(tuple(IDs))
+    if broken:
+        print("制約5破り：1日に1コマ以上入っている授業群")
+        print(broken)
+    return broken
+
+# 第6項：2クラス合同
+def is_satisfied_6(joint, koma_data):
+    broken = []
+    for j in joint:
+        if koma_data[j[0]] != koma_data[j[1]]:
+            broken.append(j)
+    if broken:
+        print("制約6破り：2クラス合同になっていない授業群")
+        print(broken)
+    return broken
+
+# 第7項：各科目が同じ時間帯に固まらないようにする
+def is_satisfied_7(one_per_gen, gen_list, koma_data):
+    broken = set()
+    for IDs in one_per_gen:
+        for day in gen_list:
+            times = 0
+            for ID in IDs:
+                if koma_data[ID] in day:
+                    times += 1
+            if times > 1:
+                broken.add(tuple(IDs))
+    if broken:
+        print("制約7破り：同じ時間帯に入っている授業群")
+        print(broken)
+    return broken
+
+# 第8項：1教員が3コマ連続にならないようにする
+def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
+    broken = []
+    for IDs in not_renzoku_ID:
+        ID3s = list(itertools.combinations(IDs, 3))
+        for ID in ID3s:
+            komas = [koma_data[ID[0]], koma_data[ID[1]], koma_data[ID[2]]]
+            komas.sort()
+            if komas[1] - komas[0] == 1 and komas[2] - komas[1] == 1:
+                for t in table:
+                    if komas[0] in t and komas[1] in t and komas[2] in t:
+                        broken.append(ID)
+                        break
+    if broken:
+        print("制約8破り：1教員が3コマ連続になっている授業群")
+        print(broken)
+    return broken
+
+# 制約の個数から基準にする満点を算出
+def PerfectScore():
+    score = 100
+    return score
+
+# 時間割の点数をそれぞれの評価軸において計算する
+import numpy as np
+def ScoreForStudents():
+    score = np.random.randint(0, 100)
+    return score
+
+def ScoreForTeachers():
+    score = np.random.randint(0, 100)
+    return score

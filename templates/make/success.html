@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block contents %}
+
+{% for table in tables %}
+<h5 class="ml-3"><a href="{% url 'make:each' 0 %}">{{table}} <span class="badge badge-primary">Good</span></a></h5>
+{% endfor %}
+
 <div class="container">
     {% for table in tables %}
     <div class="alert alert-success mt-3" role="alert">
