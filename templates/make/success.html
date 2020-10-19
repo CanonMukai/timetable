@@ -1,34 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block contents %}
-<div class="container">
-    {% for table in tables %}
-    <div class="alert alert-success mt-3" role="alert">
-        時間割の候補
-    </div>
-    {% for key, value in table.items %}
-    <table class="table table-bordered" style="table-layout:fixed;">
-        <thead>
-            <tr>
-                <th scope="col" style="width:70px;">{{ key }}</th>
-                {% for day in days %}
-                <th scope="col" style="width:200px;">{{ day }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for gen, gyou in value.items %}
-            <tr>
-                <th scope="row">{{ gen }}</th>
-                {% for info in gyou %}
-                <td style="word-wrap:break-word;">{{ info }}</td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% endfor %}
-    {% endfor %}
-    <br>
-</div>
+
+{% for candidate in candidates %}
+<h5 class="ml-3"><a href="{% url 'make:each' candidate %}">時間割の候補 No.{{ candidate }} </a><span class="badge badge-primary">Good</span></h5>
+{% endfor %}
+
 {% endblock contents %}
