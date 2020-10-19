@@ -20,3 +20,5 @@ class TimeTable(models.Model):
     steps = models.IntegerField(default=1000)
     reads = models.IntegerField(default=10)
     class_table_list = models.TextField(null=True)
+    class_table_list_for_display = models.TextField(null=True)
+    days = models.TextField(null=True)

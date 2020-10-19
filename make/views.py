@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponseRedirect, HttpResponse # TODO: HttpResponseを消す
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -132,13 +132,13 @@ def success(request):
         for komas in table:
             max_koma = max(max_koma, len(komas))
         gens = [i+1 for i in range(max_koma)]
+        t.days = json.dumps(['月', '火', '水', '木', '金', '土'][:length])
         class_table_list = ast.literal_eval(t.class_table_list)
         new_class_table_list = changed(class_table_list)
+        t.class_table_list_for_display = json.dumps(new_class_table_list)
+        t.save()
         params = {
-            'days': ['月', '火', '水', '木', '金', '土'][:length],
-            'gens': gens,
-            'classes': json.loads(t.class_list),
-            'tables': new_class_table_list
+            'candidates': [i + 1 for i in range(len(new_class_table_list))],
         }
         return render(request, 'make/success.html', params)
 
@@ -154,8 +154,13 @@ def changed(class_table_list):
                 i += 1
     return new_one
 
-def changed_for_success(class_table_list):
-    return
-
 def each_table(request, table_id):
-    return HttpResponse("timetable %s." % table_id)
+    t = TimeTable.objects.get(school_id=0)
+    class_table_list_for_display = ast.literal_eval(t.class_table_list_for_display)
+    days = json.loads(t.days)
+    params = {
+        'table_id': table_id,
+        'table': class_table_list_for_display[table_id - 1],
+        'days': days,
+    }
+    return render(request, 'make/each_table.html', params)

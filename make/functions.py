@@ -410,7 +410,6 @@ def Renzoku3Koma(model):
         for gen in range(len(day) - 2):
             if gen != lunch_after - 1 and gen != lunch_after - 2:
                 renzoku_3koma.append([day[gen], day[gen + 1], day[gen + 2]])
-    print(renzoku_3koma)
     return renzoku_3koma
 
 def NotRenzokuID(model, class_dict):
