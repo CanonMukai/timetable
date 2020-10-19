@@ -138,7 +138,8 @@ def success(request):
             'days': ['月', '火', '水', '木', '金', '土'][:length],
             'gens': gens,
             'classes': json.loads(t.class_list),
-            'tables': new_class_table_list
+            'tables': new_class_table_list,
+            'candidates': [i + 1 for i in range(len(new_class_table_list))],
         }
         return render(request, 'make/success.html', params)
 

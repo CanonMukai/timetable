@@ -2,8 +2,8 @@
 {% load static %}
 {% block contents %}
 
-{% for table in tables %}
-<h5 class="ml-3"><a href="{% url 'make:each' 0 %}">{{table}} <span class="badge badge-primary">Good</span></a></h5>
+{% for candidate in candidates %}
+<h5 class="ml-3"><a href="{% url 'make:each' candidate %}">時間割候補{{ candidate }} </a><span class="badge badge-primary">Good</span></h5>
 {% endfor %}
 
 <div class="container">
