@@ -158,9 +158,15 @@ def each_table(request, table_id):
     t = TimeTable.objects.get(school_id=0)
     class_table_list_for_display = ast.literal_eval(t.class_table_list_for_display)
     days = json.loads(t.days)
+    koma_data_list = ast.literal_eval(t.koma_data_list)
+    info = koma_data_list[table_id - 1]
     params = {
         'table_id': table_id,
         'table': class_table_list_for_display[table_id - 1],
         'days': days,
+        'sum': info['sum'],
+        'students': info['students'],
+        'teachers': info['teachers'],
+        'strict': info['strict'],
     }
     return render(request, 'make/each_table.html', params)
