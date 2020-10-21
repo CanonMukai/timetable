@@ -288,11 +288,10 @@ def KomaDataList(model, class_dict):
     convenience = Convenience(model, class_dict)
     renzoku_koma = Renzoku2Koma(model)
     renzoku_ID = []
-    one_per_day = OnePerGen(model, class_dict)
     joint = Joint()
     gen_list = GenList(model)
-    # TODO: OnePerDay()
-    one_per_gen = one_per_day
+    one_per_gen = OnePerGen(model, class_dict)
+    one_per_day = OnePerDay(one_per_gen, renzoku_ID)
     renzoku_2koma = Renzoku2Koma(model)
     renzoku_3koma = Renzoku3Koma(model)
     not_renzoku_ID = NotRenzokuID(model, class_dict)
@@ -374,8 +373,17 @@ def Convenience(model, class_dict):
                     convenience.append([ID, koma])
     return convenience
 
-def OnePerDay():
-    return []
+def OnePerDay(one_per_gen, renzoku_ID):
+    one_per_day = []
+    for IDs in one_per_gen:
+        adding = True
+        for renzoku in renzoku_ID:
+            if renzoku[0] in IDs and renzoku[1] in IDs:
+                adding = False
+                break
+        if adding:
+            one_per_day.append(IDs)
+    return one_per_day
 
 def Joint():
     return []
