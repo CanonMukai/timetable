@@ -4,10 +4,20 @@
 <div class="alert alert-success mt-3" role="alert">
     時間割の候補 No.{{ table_id }}
 </div>
+<!-- 時間割の得点・評価の表示 -->
 <h4 class="m-3">総合評価　{{ sum }}点</h4>
 <li class="m-3">重要な制約：{{ strict }}</li>
 <li class="m-3">先生の負担：{{ teachers }}</li>
 <li class="m-3">生徒の負担：{{ students }}</li>
+<!-- ダウンロード -->
+<form method="post" novalidate>
+    {% csrf_token %}
+    <div class="m-3">
+        <a href="{% url 'make:download' table_id %}" class="btn btn-secondary"
+            role="button">時間割のエクセルデータをダウンロードする</a>
+    </div>
+</form>
+<!-- 各クラスの時間割表示 -->
 <div class="container">
     {% for key, value in table.items %}
     <table class="table table-bordered" style="table-layout:fixed;">

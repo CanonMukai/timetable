@@ -236,12 +236,13 @@ def write_list_2d(sheet, list2d, start_row, start_col):
                       column=start_col + x,
                       value=list2d[y][x])
             
-def MakeExcelFile(output_file, class_dict, koma_data, table, weekly):
+def MakeExcelFile(model, table_id, response):
     # 書き込みに必要なデータ
-    class_name = ClassName(class_dict)
-    class_table = ClassTable(koma_data, class_dict, class_name, table)
-    teacher_name = TeacherName(class_dict)
-    teacher_table = TeacherTable(koma_data, class_dict, teacher_name, weekly)
+    class_name = json.loads(model.class_list)
+    class_table = ast.literal_eval(model.class_table_list)[table_id - 1]
+    teacher_name = json.loads(model.teacher_list)
+    # TODO: teacher_table
+    table = json.loads(model.table)
 
     # 書き込み用
     wb = openpyxl.Workbook()
@@ -277,9 +278,10 @@ def MakeExcelFile(output_file, class_dict, koma_data, table, weekly):
         # 先生の名前
         write_list_2d(sheet2, [[teacher_name[i]]], 2+i, 1)
         # 時間割
-        write_list_2d(sheet2, teacher_table[teacher_name[i]], 2+i, 2)
-
-    wb.save(output_file)
+        # write_list_2d(sheet2, teacher_table[teacher_name[i]], 2+i, 2)
+    # responseにファイルの内容を書き込んでそのままダウンロードさせる
+    # ファイルの中身はアプリのどこにも残らない
+    wb.save(response)
 
 def KomaDataList(model, class_dict):
     adjacent = Adjacent(class_dict)
