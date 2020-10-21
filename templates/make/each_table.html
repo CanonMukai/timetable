@@ -1,10 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block contents %}
+<div class="alert alert-success mt-3" role="alert">
+    時間割の候補 No.{{ table_id }}
+</div>
+<h4 class="m-3">総合評価　{{ sum }}点</h4>
+<li class="m-3">重要な制約：{{ strict }}</li>
+<li class="m-3">先生の負担：{{ teachers }}</li>
+<li class="m-3">生徒の負担：{{ students }}</li>
 <div class="container">
-    <div class="alert alert-success mt-3" role="alert">
-        時間割の候補 No.{{ table_id }}
-    </div>
     {% for key, value in table.items %}
     <table class="table table-bordered" style="table-layout:fixed;">
         <thead>

@@ -22,3 +22,4 @@ class TimeTable(models.Model):
     class_table_list = models.TextField(null=True)
     class_table_list_for_display = models.TextField(null=True)
     days = models.TextField(null=True)
+    koma_data_list = models.TextField(null=True)

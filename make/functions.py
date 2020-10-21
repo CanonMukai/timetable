@@ -288,15 +288,14 @@ def KomaDataList(model, class_dict):
     convenience = Convenience(model, class_dict)
     renzoku_koma = Renzoku2Koma(model)
     renzoku_ID = []
-    one_per_day = OnePerGen(model, class_dict)
     joint = Joint()
     gen_list = GenList(model)
-    # TODO: OnePerDay()
-    one_per_gen = one_per_day
+    one_per_gen = OnePerGen(model, class_dict)
+    one_per_day = OnePerDay(one_per_gen, renzoku_ID)
     renzoku_2koma = Renzoku2Koma(model)
     renzoku_3koma = Renzoku3Koma(model)
     not_renzoku_ID = NotRenzokuID(model, class_dict)
-    perfect_score = PerfectScore()
+    perfect = PerfectScore()
     w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 4, 1, 6, 1, 5
     Q, constant, A = Hamiltonian(
         class_dict,
@@ -321,22 +320,36 @@ def KomaDataList(model, class_dict):
                 koma_data[i] = a
         # 基本制約を満たしていれば次のステップ(得点の計算)へ
         if is_satisfied_2(koma_data, total) and is_satisfied_1(adjacent, joint, koma_data):
+            # 制約を満たさなかった群
             broken3 = is_satisfied_3(convenience, koma_data)
             broken4 = is_satisfied_4(renzoku_ID, renzoku_koma, koma_data)
             broken5 = is_satisfied_5(one_per_day, table, koma_data)
             broken6 = is_satisfied_6(joint, koma_data)
             broken7 = is_satisfied_7(one_per_gen, gen_list, koma_data)
             broken8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
-            score_for_students = ScoreForStudents()
-            score_for_teachers = ScoreForTeachers()
-            sum_of_scores = sum([score_for_students, score_for_teachers])
+            # 条件の重み
+            penalty3 = 5
+            penalty4 = 5
+            penalty5 = 5
+            penalty6 = 5
+            penalty7 = 5
+            penalty8 = 5
+            # 得点の計算
+            score_for_students = ScoreForStudents(perfect, broken5, broken7, penalty5, penalty7)
+            score_for_teachers = ScoreForTeachers(perfect, broken3, broken8, penalty3, penalty8)
+            score_strict = ScoreStrict(perfect, broken4, broken6, penalty4, penalty6)
+            sum_of_scores = sum([score_for_students, score_for_teachers, score_strict])
             koma_data_list.append({
                 'koma_data': koma_data,
                 'sum': sum_of_scores,
                 'students': score_for_students,
-                'teachers': score_for_teachers
+                'teachers': score_for_teachers,
+                'strict': score_strict,
             })
+    # koma_dataを得点の高い順に並べかえる
     koma_data_list.sort(key=lambda x: -x['sum'])
+    model.koma_data_list = json.dumps(koma_data_list)
+    model.save()
     return koma_data_list
 
 def ClassTableList(model):
@@ -360,8 +373,17 @@ def Convenience(model, class_dict):
                     convenience.append([ID, koma])
     return convenience
 
-def OnePerDay():
-    return []
+def OnePerDay(one_per_gen, renzoku_ID):
+    one_per_day = []
+    for IDs in one_per_gen:
+        adding = True
+        for renzoku in renzoku_ID:
+            if renzoku[0] in IDs and renzoku[1] in IDs:
+                adding = False
+                break
+        if adding:
+            one_per_day.append(IDs)
+    return one_per_day
 
 def Joint():
     return []
@@ -540,15 +562,30 @@ def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
 
 # 制約の個数から基準にする満点を算出
 def PerfectScore():
-    score = 100
+    score = 1000
     return score
 
 # 時間割の点数をそれぞれの評価軸において計算する
-import numpy as np
-def ScoreForStudents():
-    score = np.random.randint(0, 100)
-    return score
+def ScoreForStudents(perfect, broken5, broken7, penalty5, penalty7):
+    total_penalty = 0
+    # 制約5:1日1コマ
+    total_penalty += penalty5 * len(broken5)
+    # 制約7:同じ時間にかためない
+    total_penalty += penalty7 * len(broken7)
+    return (perfect - total_penalty) * 100 / perfect
 
-def ScoreForTeachers():
-    score = np.random.randint(0, 100)
-    return score
+def ScoreForTeachers(perfect, broken3, broken8, penalty3, penalty8):
+    total_penalty = 0
+    # 制約3:先生の都合
+    total_penalty += penalty3 * len(broken3)
+    # 制約8:3コマ連続にしない
+    total_penalty += penalty8 * len(broken8)
+    return (perfect - total_penalty) * 100 / perfect
+
+def ScoreStrict(perfect, broken4, broken6, penalty4, penalty6):
+    total_penalty = 0
+    # 制約4:2時間連続
+    total_penalty += penalty4 * len(broken4)
+    # 制約6:2クラス合同
+    total_penalty += penalty6 * len(broken6)
+    return (perfect - total_penalty) * 100 / perfect
