@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, FileResponse
 from django.urls import reverse
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -52,7 +52,7 @@ def make(request):
                 cell_list=json.dumps(cell_list),
                 teacher_list=json.dumps(teacher_list),
                 class_list=json.dumps(class_list),
-                weekly=weekly
+                weekly=weekly,
             )
             timetable.save()
             return HttpResponseRedirect(reverse('make:constraint'))
@@ -170,3 +170,12 @@ def each_table(request, table_id):
         'strict': info['strict'],
     }
     return render(request, 'make/each_table.html', params)
+
+def download(request, table_id):
+    t = TimeTable.objects.get(school_id=0)
+    # エクセルファイルをダウンロードするための呪文
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="timetable{}.xlsx"'.format(table_id)
+    # エクセルファイルの内容をresponseに保存
+    MakeExcelFile(t, table_id, response)
+    return response
