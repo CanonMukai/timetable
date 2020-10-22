@@ -21,5 +21,6 @@ class TimeTable(models.Model):
     reads = models.IntegerField(default=10)
     class_table_list = models.TextField(null=True)
     class_table_list_for_display = models.TextField(null=True)
+    teacher_table_list = models.TextField(null=True)
     days = models.TextField(null=True)
     koma_data_list = models.TextField(null=True)
