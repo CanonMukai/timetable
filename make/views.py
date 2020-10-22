@@ -116,8 +116,15 @@ def constraint(request):
                 con.pop(key)
             t.convenience = json.dumps(con)
             t.save()
-            class_table_list = ClassTableList(t)
+            # 時間割作成
+            cell_list = json.loads(t.cell_list)
+            class_dict = ClassDict(cell_list)
+            koma_data_list = KomaDataList(t, class_dict)
+            t.koma_data_list = json.dumps(koma_data_list)
+            class_table_list = ClassTableList(t, class_dict)
             t.class_table_list = json.dumps(class_table_list)
+            teacher_table_list = TeacherTableList(t, class_dict)
+            t.teacher_table_list = json.dumps(teacher_table_list)
             t.save()
             return HttpResponseRedirect(reverse('make:success'))
     else:

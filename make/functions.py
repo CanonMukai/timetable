@@ -204,24 +204,22 @@ def ClassTable(koma_data, class_dict, class_name, table):
         # tableの形によるかも
         class_table[name] = [[""] * len(table) for i in range(len(table[0]))]
     total = len(class_dict)
-    #for ID in range(total):
     for ID in koma_data:
         x, y = search(table, koma_data[ID])
-        for name in class_dict[ID]['CLASS']:
+        for name in class_dict[int(ID)]['CLASS']:
             # ここでx, yをひっくり返している
-            class_table[name][y][x] = class_dict[ID]['NAME'] + ',' + ','.join(class_dict[ID]['TEACHER']) + ',' + ','.join(class_dict[ID]['PLACE'])
+            class_table[name][y][x] = class_dict[int(ID)]['NAME'] + ',' + ','.join(class_dict[int(ID)]['TEACHER']) + ',' + ','.join(class_dict[int(ID)]['PLACE'])
     return class_table
 
 def TeacherTable(koma_data, class_dict, teacher_name, weekly):
     teacher_table = {}
     for name in teacher_name:
-        teacher_table[name] = [[None] * weekly]
+        teacher_table[name] = [[""] * weekly]
     total = len(class_dict)
-    #for ID in range(total):
     for ID in koma_data:
         order = koma_data[ID]
-        for name in class_dict[ID]['TEACHER']:
-            teacher_table[name][0][order] = class_dict[ID]['NAME'] + ',' + ','.join(class_dict[ID]['CLASS'])
+        for name in class_dict[int(ID)]['TEACHER']:
+            teacher_table[name][0][order] = class_dict[int(ID)]['NAME'] + ',' + ','.join(class_dict[int(ID)]['CLASS'])
     return teacher_table
 
 # --- 時間割を別のExcelファイルに出力 ---
@@ -242,6 +240,7 @@ def MakeExcelFile(model, table_id, response):
     class_table = ast.literal_eval(model.class_table_list)[table_id - 1]
     teacher_name = json.loads(model.teacher_list)
     # TODO: teacher_table
+    teacher_table = ast.literal_eval(model.teacher_table_list)[table_id - 1]
     table = json.loads(model.table)
 
     # 書き込み用
@@ -278,7 +277,7 @@ def MakeExcelFile(model, table_id, response):
         # 先生の名前
         write_list_2d(sheet2, [[teacher_name[i]]], 2+i, 1)
         # 時間割
-        # write_list_2d(sheet2, teacher_table[teacher_name[i]], 2+i, 2)
+        write_list_2d(sheet2, teacher_table[teacher_name[i]], 2+i, 2)
     # responseにファイルの内容を書き込んでそのままダウンロードさせる
     # ファイルの中身はアプリのどこにも残らない
     wb.save(response)
@@ -354,16 +353,25 @@ def KomaDataList(model, class_dict):
     model.save()
     return koma_data_list
 
-def ClassTableList(model):
-    cell_list = json.loads(model.cell_list)
-    class_dict = ClassDict(cell_list)
-    koma_data_list = KomaDataList(model, class_dict)
+def ClassTableList(model, class_dict):
+    koma_data_list = ast.literal_eval(model.koma_data_list)
     class_table_list = []
+    class_list = json.loads(model.class_list)
     for info in koma_data_list:
         koma_data = info['koma_data']
-        class_table = ClassTable(koma_data, class_dict, json.loads(model.class_list), json.loads(model.table))
+        class_table = ClassTable(koma_data, class_dict, class_list, json.loads(model.table))
         class_table_list.append(class_table)
     return class_table_list
+    
+def TeacherTableList(model, class_dict):
+    koma_data_list = ast.literal_eval(model.koma_data_list)
+    teacher_table_list = []
+    teacher_list = json.loads(model.teacher_list)
+    for info in koma_data_list:
+        koma_data = info['koma_data']
+        teacher_table = TeacherTable(koma_data, class_dict, teacher_list, model.weekly)
+        teacher_table_list.append(teacher_table)
+    return teacher_table_list
 
 def Convenience(model, class_dict):
     convenience = []
