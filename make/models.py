@@ -15,6 +15,7 @@ class TimeTable(models.Model):
     cell_list = models.TextField(null=True)
     teacher_list = models.TextField(null=True)
     class_list = models.TextField(null=True)
+    jugyo_dict = models.TextField(null=True)
     weekly = models.IntegerField(null=True)
     convenience = models.TextField(default=json.dumps({}))
     steps = models.IntegerField(default=1000)

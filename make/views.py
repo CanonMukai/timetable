@@ -41,6 +41,7 @@ def make(request):
             class_dict = ClassDict(cell_list)
             teacher_list = TeacherName(class_dict)
             class_list = ClassName(class_dict)
+            jugyo_dict = JugyoDict(cell_list)
             if TimeTable.objects.filter(school_id=0).exists():
                 t = TimeTable.objects.get(school_id=0)
                 t.delete()
@@ -52,6 +53,7 @@ def make(request):
                 cell_list=json.dumps(cell_list),
                 teacher_list=json.dumps(teacher_list),
                 class_list=json.dumps(class_list),
+                jugyo_dict=json.dumps(jugyo_dict),
                 weekly=weekly,
             )
             timetable.save()
@@ -71,6 +73,7 @@ days = ['月', '火', '水', '木', '金', '土']
 def constraint(request):
     t = TimeTable.objects.get(school_id=0)
     teacher_list = json.loads(t.teacher_list)
+    jugyo_dict = ast.literal_eval(t.jugyo_dict)
     table = json.loads(t.table)
     max_koma = 0
     for komas in table:
@@ -92,11 +95,13 @@ def constraint(request):
         'teacher': teacher_list,
         'days': ['月', '火', '水', '木', '金', '土'][:length],
         'tabledict': table_dict,
+        'jugyo': jugyo_dict,
     }
     if request.method == 'POST':
-        if 'add' in request.POST or 'clear' in request.POST or 'clear-all' in request.POST:
+        post_set = {'add', 'clear', 'clear-all', 'add4'}
+        if post_set & set(request.POST):
             # TODO: 戻るボタンを押されたときの挙動 現在追加済みの休むコマが誤って表示される
-            # 先生の都合の取得
+            # 制約3: 先生の都合の取得
             con = ast.literal_eval(t.convenience)
             if 'add' in request.POST:
                 teacher = request.POST['teacher']
@@ -123,6 +128,7 @@ def constraint(request):
                 for gen in gens:
                     con3_gen[name] += gen_dict[gen] + " "
             params['con3'] = con3_gen
+            # 制約4: 2時間連続にしたいコマ
             return render(request, 'make/constraint.html', params)
         elif 'make' in request.POST:
             t.steps = int(request.POST['steps'])

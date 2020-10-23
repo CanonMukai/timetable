@@ -198,6 +198,21 @@ def TeacherName(class_dict):
     teacher_list.sort()
     return teacher_list
 
+def JugyoDict(cell_list):
+    """
+    {"1A 国語": "国語（1A）", "1A,1B 国語": "国語（1A,1B）"}
+    """
+    jugyo_set = set()
+    jugyo_dict = {}
+    total = len(cell_list)
+    for i in range(total):
+        info = "{}（{}）".format(cell_list[i][1], cell_list[i][2])
+        if info not in jugyo_set:
+            jugyo_set.add(info)
+            key = "{}（{}）".format(cell_list[i][2], cell_list[i][1])
+            jugyo_dict[key] = info
+    return jugyo_dict
+
 def ClassTable(koma_data, class_dict, class_name, table):
     class_table = {}
     for name in class_name:
