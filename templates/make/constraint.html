@@ -52,6 +52,27 @@
             {% endfor %}
         </table>
     </div>
+    <!-- 加えた制約3の表示 -->
+    <div class="m-3" style="background-color: whitesmoke;">
+        {% if con3 %}
+        <div class="m-3">
+            <p>現在追加済みのお休みコマ</p>
+        </div>
+        {% endif %}
+        <div class="m-3">
+            {% for name, komas in con3.items %}
+            {% if komas %}
+            <li class="m-3">{{ name }} 先生： {{ komas }}　<button type="submit" class="btn btn-outline-secondary btn-sm"
+                    id="clear" name="clear" value="{{ name }}">取り消す</button></li>
+            {% endif %}
+            {% endfor %}
+        </div>
+        {% if con3 %}
+        <div class="m-3">
+            <button type="submit" class="btn btn-outline-secondary btn-sm" name="clear-all">全教員の休むコマを取り消す</button>
+        </div>
+        {% endif %}
+    </div>
 
     <!-- マシンの選択 -->
     <div>

@@ -77,6 +77,7 @@ def constraint(request):
         max_koma = max(max_koma, len(komas))
     length = len(table)
     table_dict = {}
+    gen_dict = {}
     for i in range(max_koma):
         table_dict[i+1] = [""] * length
     i = 0
@@ -84,24 +85,44 @@ def constraint(request):
         j = 0
         for gen in day:
             table_dict[j + 1][i] = {gen: days[i] + str(j+1)}
+            gen_dict[gen] = days[i] + str(j+1)
             j += 1
         i += 1
     params = {
         'teacher': teacher_list,
         'days': ['月', '火', '水', '木', '金', '土'][:length],
-        'tabledict': table_dict
+        'tabledict': table_dict,
     }
     if request.method == 'POST':
-        if 'add' in request.POST:
+        if 'add' in request.POST or 'clear' in request.POST or 'clear-all' in request.POST:
+            # TODO: 戻るボタンを押されたときの挙動 現在追加済みの休むコマが誤って表示される
             # 先生の都合の取得
             con = ast.literal_eval(t.convenience)
-            teacher = request.POST['teacher']
-            con[teacher] = []
-            for i in range(t.weekly):
-                if str(i) in request.POST:
-                    con[teacher].append(i)
+            if 'add' in request.POST:
+                teacher = request.POST['teacher']
+                con[teacher] = []
+                not_in = True
+                for i in range(t.weekly):
+                    if str(i) in request.POST:
+                        not_in = False
+                        con[teacher].append(i)
+                if not_in:
+                    con.pop(teacher)
+            elif 'clear' in request.POST:
+                teacher = request.POST['clear']
+                if teacher in con: # 戻るボタンを押されたときの対処用if
+                    con.pop(teacher)
+            elif 'clear-all' in request.POST:
+                con.clear()
             t.convenience = json.dumps(con)
             t.save()
+            # 各教員の休むコマ
+            con3_gen = {}
+            for name, gens in con.items():
+                con3_gen[name] = ""
+                for gen in gens:
+                    con3_gen[name] += gen_dict[gen] + " "
+            params['con3'] = con3_gen
             return render(request, 'make/constraint.html', params)
         elif 'make' in request.POST:
             t.steps = int(request.POST['steps'])
