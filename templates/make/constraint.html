@@ -78,7 +78,13 @@
     <div class="alert alert-primary mt-3" role="alert">
         2時間連続にしたい授業を選択し、「追加」を押してください（<b>クラス名を間違えないように注意してください</b>）
     </div>
-    <div class="form-row align-items-center">
+    <!-- 2時間連続 違うクラス or 違う授業 -->
+    <div class="m-3">
+        <p><b>※同じクラスの同じ授業はここでは選択できません（下で選択してください）</b></p>
+        <p>　例1）「数学（1A）と国語（1A）」 → 1Aの数学と国語が2コマ連続になる</p>
+        <p>　例2）「体育（1A,1B）と体育（1C,1D）」 → 1A,1Bの体育と1C,1Dの体育が2コマ連続になる</p>
+    </div>
+    <div class="form-row align-items-center ml-3">
         <div class="col-auto ml-3">
             <label class="mr-sm-2 sr-only" for="jugyo1">Preference</label>
             <select class="custom-select mr-sm-2 mb-2" id="jugyo1" name="jugyo1">
@@ -99,6 +105,40 @@
         <div class="col-auto">
             <button type="submit" class="btn btn-secondary mb-2" name="add4">追加</button>
         </div>
+    </div>
+    <!-- 2時間連続 同じクラスの同じ授業 -->
+    <div class="m-3">
+        <p><b>同じクラスの同じ授業を連続にしたいとき</b></p>
+        <p>　例）「数学（1A）」を選択すると1Aの数学が2コマ連続になる</p>
+    </div>
+    <div class="form-row align-items-center ml-3">
+        <div class="col-auto ml-3">
+            <label class="mr-sm-2 sr-only" for="jugyo">Preference</label>
+            <select class="custom-select mr-sm-2 mb-2" id="jugyo" name="jugyo">
+                {% for key, value in jugyo.items %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-secondary mb-2" name="add4-same">追加</button>
+        </div>
+    </div>
+    <!-- 加えた制約4の表示 -->
+    <div class="m-3" style="background-color: whitesmoke;">
+        {% if renzoku %}
+        <div class="m-3">
+            <p>現在追加済みの2時間連続コマ</p>
+        </div>
+        {% for key, value in renzoku.items %}
+        <div class="m-3">
+            <li>{{ value }}</li>
+        </div>
+        {% endfor %}
+        <div class="m-3">
+            <button type="submit" class="btn btn-outline-secondary btn-sm" name="clear-all4">全ての2連続授業を取り消す</button>
+        </div>
+        {% endif %}
     </div>
 
     <!-- マシンの選択 -->

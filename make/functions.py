@@ -209,7 +209,7 @@ def JugyoDict(cell_list):
         info = "{}（{}）".format(cell_list[i][1], cell_list[i][2])
         if info not in jugyo_set:
             jugyo_set.add(info)
-            key = "{}（{}）".format(cell_list[i][2], cell_list[i][1])
+            key = "{} {}".format(cell_list[i][2], cell_list[i][1])
             jugyo_dict[key] = info
     return jugyo_dict
 
@@ -303,7 +303,7 @@ def KomaDataList(model, class_dict):
     table = json.loads(model.table)
     convenience = Convenience(model, class_dict)
     renzoku_koma = Renzoku2Koma(model)
-    renzoku_ID = []
+    renzoku_ID = json.loads(model.renzoku_ID)
     joint = Joint()
     gen_list = GenList(model)
     one_per_gen = OnePerGen(model, class_dict)
@@ -312,7 +312,7 @@ def KomaDataList(model, class_dict):
     renzoku_3koma = Renzoku3Koma(model)
     not_renzoku_ID = NotRenzokuID(model, class_dict)
     perfect = PerfectScore()
-    w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 4, 1, 6, 1, 5
+    w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 9, 1, 6, 1, 4
     Q, constant, A = Hamiltonian(
         class_dict,
         model.weekly, total, 
