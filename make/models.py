@@ -15,8 +15,15 @@ class TimeTable(models.Model):
     cell_list = models.TextField(null=True)
     teacher_list = models.TextField(null=True)
     class_list = models.TextField(null=True)
+    jugyo_dict = models.TextField(null=True)
     weekly = models.IntegerField(null=True)
     convenience = models.TextField(default=json.dumps({}))
+    renzoku_ID = models.TextField(default=json.dumps([]))
+    con4_display = models.TextField(default=json.dumps({}))
+    """
+    {'0,9 1,10 2,11': '国語（1A）と国語（1B）', '3,4 5,6': '英語（1A）'}
+    """
+
     steps = models.IntegerField(default=1000)
     reads = models.IntegerField(default=10)
     class_table_list = models.TextField(null=True)

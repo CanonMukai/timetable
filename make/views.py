@@ -41,6 +41,7 @@ def make(request):
             class_dict = ClassDict(cell_list)
             teacher_list = TeacherName(class_dict)
             class_list = ClassName(class_dict)
+            jugyo_dict = JugyoDict(cell_list)
             if TimeTable.objects.filter(school_id=0).exists():
                 t = TimeTable.objects.get(school_id=0)
                 t.delete()
@@ -52,6 +53,7 @@ def make(request):
                 cell_list=json.dumps(cell_list),
                 teacher_list=json.dumps(teacher_list),
                 class_list=json.dumps(class_list),
+                jugyo_dict=json.dumps(jugyo_dict),
                 weekly=weekly,
             )
             timetable.save()
@@ -71,6 +73,7 @@ days = ['月', '火', '水', '木', '金', '土']
 def constraint(request):
     t = TimeTable.objects.get(school_id=0)
     teacher_list = json.loads(t.teacher_list)
+    jugyo_dict = ast.literal_eval(t.jugyo_dict)
     table = json.loads(t.table)
     max_koma = 0
     for komas in table:
@@ -92,11 +95,13 @@ def constraint(request):
         'teacher': teacher_list,
         'days': ['月', '火', '水', '木', '金', '土'][:length],
         'tabledict': table_dict,
+        'jugyo': jugyo_dict,
     }
     if request.method == 'POST':
-        if 'add' in request.POST or 'clear' in request.POST or 'clear-all' in request.POST:
+        post_set = {'add', 'clear', 'clear-all', 'add4', 'add4-same', 'clear-all4'}
+        if post_set & set(request.POST):
             # TODO: 戻るボタンを押されたときの挙動 現在追加済みの休むコマが誤って表示される
-            # 先生の都合の取得
+            # 制約3: 先生の都合の取得
             con = ast.literal_eval(t.convenience)
             if 'add' in request.POST:
                 teacher = request.POST['teacher']
@@ -115,7 +120,59 @@ def constraint(request):
             elif 'clear-all' in request.POST:
                 con.clear()
             t.convenience = json.dumps(con)
+            # 制約4: 2時間連続にしたいコマ
+            renzoku_ID = json.loads(t.renzoku_ID)
+            con4_display = ast.literal_eval(t.con4_display)
+            if {'add4', 'add4-same', 'clear-all4'} & set(request.POST):
+                class1, name1 = map(str, request.POST['jugyo1'].split())
+                class2, name2 = map(str, request.POST['jugyo2'].split())
+                class3, name3 = map(str, request.POST['jugyo'].split())
+                cell_list = json.loads(t.cell_list)
+                jugyo1, jugyo2, jugyo3 = [], [], []
+                for i in range(len(cell_list)):
+                    if 'add4' in request.POST:
+                        if cell_list[i][1] == name1 and cell_list[i][2] == class1:
+                            jugyo1.append(cell_list[i][0])
+                        elif cell_list[i][1] == name2 and cell_list[i][2] == class2:
+                            jugyo2.append(cell_list[i][0])
+                    elif 'add4-same' in request.POST:
+                        if cell_list[i][1] == name3 and cell_list[i][2] == class3:
+                            jugyo3.append(cell_list[i][0])
+                # 同じクラスの同じ授業でなければ追加する
+                if 'add4' in request.POST and (class1 != class2 or name1 != name2):
+                    min_num = min(len(jugyo1), len(jugyo2))
+                    ids = ''
+                    not_in_renzoku_ID = False
+                    for i in range(min_num):
+                        id1 = min(jugyo1[i], jugyo2[i])
+                        id2 = max(jugyo1[i], jugyo2[i])
+                        if [id1, id2] not in renzoku_ID:
+                            renzoku_ID.append([id1, id2])
+                            ids += ' {},{}'.format(id1, id2)
+                            not_in_renzoku_ID = True
+                    if not_in_renzoku_ID:
+                        con4_display[ids] = '{}（{}）と{}（{}）'.format(name1, class1, name2, class2)
+                # 同じクラスの同じ授業を2コマ連続にするとき
+                elif 'add4-same' in request.POST:
+                    min_num = len(jugyo3) // 2
+                    ids = ''
+                    not_in_renzoku_ID = False
+                    for i in range(min_num):
+                        id1 = min(jugyo3[2 * i], jugyo3[2 * i + 1])
+                        id2 = max(jugyo3[2 * i], jugyo3[2 * i + 1])
+                        if [id1, id2] not in renzoku_ID:
+                            renzoku_ID.append([id1, id2])
+                            ids += ' {},{}'.format(id1, id2)
+                            not_in_renzoku_ID = True
+                    if not_in_renzoku_ID:
+                        con4_display[ids] = '{}（{}）'.format(name3, class3)
+                if 'clear-all4' in request.POST:
+                    renzoku_ID = []
+                    con4_display = {}
+                t.renzoku_ID = json.dumps(renzoku_ID)
+                t.con4_display = json.dumps(con4_display)
             t.save()
+            # 表示部分
             # 各教員の休むコマ
             con3_gen = {}
             for name, gens in con.items():
@@ -123,6 +180,8 @@ def constraint(request):
                 for gen in gens:
                     con3_gen[name] += gen_dict[gen] + " "
             params['con3'] = con3_gen
+            # 2時間連続のコマ
+            params['renzoku'] = con4_display
             return render(request, 'make/constraint.html', params)
         elif 'make' in request.POST:
             t.steps = int(request.POST['steps'])
