@@ -81,6 +81,13 @@ def constraint(request):
     length = len(table)
     table_dict = {}
     gen_dict = {}
+    """
+    table_dict = {1: [{0: '月1'}, {3: '火1'}, {6: '水1'}], 
+                  2: [{1: '月2'}, {4: '火2'}, {7: '水2'}], 
+                  3: [{2: '月3'}, {5: '火3'}, {8: '水3'}]}
+    gen_dict = {0: '月1', 1: '月2', 2: '月3', 3: '火1', ... }
+    modelに保存するとkeyがintからstrに変わる
+    """
     for i in range(max_koma):
         table_dict[i+1] = [""] * length
     i = 0
@@ -91,6 +98,8 @@ def constraint(request):
             gen_dict[gen] = days[i] + str(j+1)
             j += 1
         i += 1
+    t.gen_dict = json.dumps(gen_dict)
+    t.save()
     params = {
         'teacher': teacher_list,
         'days': ['月', '火', '水', '木', '金', '土'][:length],

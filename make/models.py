@@ -17,7 +17,17 @@ class TimeTable(models.Model):
     class_list = models.TextField(null=True)
     jugyo_dict = models.TextField(null=True)
     weekly = models.IntegerField(null=True)
+
+    gen_dict = models.TextField(default=json.dumps({}))
+    """
+    gen_dict = {'0': '月1', '1': '月2', '2': '月3', '3': '火1', ... }
+    """
+
     convenience = models.TextField(default=json.dumps({}))
+    """
+    {'鈴木': [0, 1, 2], '佐藤': [3, 4]}
+    """
+
     renzoku_ID = models.TextField(default=json.dumps([]))
     con4_display = models.TextField(default=json.dumps({}))
     """

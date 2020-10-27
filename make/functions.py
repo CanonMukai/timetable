@@ -108,7 +108,7 @@ def Hamiltonian(class_dict,
                     A[k1, k2] += (w2 + plus2)
     # 第3項：制約条件（教員の都合を反映）
     for con in convenience:
-        # convenience：[[ID, c], [ID, c], ...]
+        # convenience：[[ID, c, teacher_name], [ID, c, teacher_name], ...]
         i, a = con[0], con[1]
         k = weekly * i + a
         A[k, k] += w3
@@ -338,7 +338,7 @@ def KomaDataList(model, class_dict):
         # 基本制約を満たしていれば次のステップ(得点の計算)へ
         if is_satisfied_2(koma_data, total) and is_satisfied_1(adjacent, joint, koma_data):
             # 制約を満たさなかった群
-            broken3 = is_satisfied_3(convenience, koma_data)
+            broken3, display3 = is_satisfied_3(convenience, koma_data, model)
             broken4 = is_satisfied_4(renzoku_ID, renzoku_koma, koma_data)
             broken5 = is_satisfied_5(one_per_day, table, koma_data)
             broken6 = is_satisfied_6(joint, koma_data)
@@ -363,6 +363,7 @@ def KomaDataList(model, class_dict):
                 'students': score_for_students,
                 'teachers': score_for_teachers,
                 'strict': score_strict,
+                'display3': display3,
             })
             table_id += 1
     # koma_dataを得点の高い順に並べかえる
@@ -398,7 +399,7 @@ def Convenience(model, class_dict):
         for teacher in con:
             if teacher in info['TEACHER']:
                 for koma in con[teacher]:
-                    convenience.append([ID, koma])
+                    convenience.append([ID, koma, teacher])
     return convenience
 
 def OnePerDay(one_per_gen, renzoku_ID):
@@ -504,16 +505,30 @@ def is_satisfied_2(koma_data, total):
 
 # 第3項：教員の都合を反映
 # 以下第8項まで、jupyterのときと違いsatisfiedではなくbrokenを返すことにする
-def is_satisfied_3(convenience, koma_data):
+def is_satisfied_3(convenience, koma_data, model):
+    """
+    broken: [[ID, コマ, teacher_name], [ID, コマ, teacher_name], ... ]
+    display: {'鈴木': '月1 火2 ', '佐藤': '月1 月2 '}
+    """
     broken = []
     for con in convenience:
-        ID, koma = con[0], con[1]
+        ID, koma, teacher = con[0], con[1], con[2]
         if koma_data[ID] == koma:
-            broken.append("ID: {}, コマ: {}".format(ID, koma))
+            broken.append(con)
     if broken:
         print("制約3破り：都合が反映されていない授業IDとそのコマ")
         print(broken)
-    return broken
+    # '月2 月1'のように順番があべこべにならないようbrokenをコマで並べ替えておく
+    broken.sort(key=lambda x: x[1])
+    display = {}
+    gen_dict = ast.literal_eval(model.gen_dict)
+    for b in broken:
+        ID, koma, teacher = b[0], b[1], b[2]
+        if teacher in display:
+            display[teacher] += gen_dict[str(koma)] + ' '
+        else:
+            display[teacher] = gen_dict[str(koma)] + ' '
+    return broken, display
 
 # 第4項：2時間続きにしたい授業
 def is_satisfied_4(renzoku_ID, renzoku_koma, koma_data):

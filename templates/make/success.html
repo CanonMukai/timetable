@@ -10,12 +10,17 @@
         <h2>総合評価　{{ info.sum }} 点</h2>
     </div>
     <div class="teacher">
-        <div class="title mb-3">先生の負担　{{ info.teachers }} 点</div>
+        <div class="title">先生の負担　{{ info.teachers }} 点</div>
         <div class="m-3">
+            {% if info.display3 %}
             <h6>満たされていない先生の都合</h6>
-            <li>a 先生：月曜日に授業あり</li>
-            <li>先生</li>
-            <p>3コマ連続</p>
+            <div class="m-3">
+                {% for teacher, koma in info.display3.items %}
+                <li>{{ teacher }} 先生：{{ koma }}に授業あり</li>
+                {% endfor %}
+            </div>
+            {% endif %}
+            <h6>3コマ連続</h6>
         </div>
     </div>
     <div class="student">
@@ -48,7 +53,6 @@
         padding: 0.5em;
         margin-right: 1%;
         width: 49.5%;
-        /* height: 100px; */
         border-radius: 15px;
     }
 
@@ -63,7 +67,6 @@
         color: white;
         padding: 0.5em;
         width: 49.5%;
-        /* height: 100px; */
         border-radius: 15px;
     }
 
@@ -75,47 +78,6 @@
     .box-clear {
         clear: both;
         height: 50px;
-    }
-
-    .height1 {
-        height: 300px;
-    }
-
-    .width1 {
-        width: 800px;
-    }
-
-    .box1 {
-        /* display: inline-block; */
-        margin: 2em 0;
-        background: #f1f1f1;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.22);
-        /* width: 200px; */
-    }
-
-    .box1 .box-title {
-        font-size: 1.2em;
-        background: #5fc2f5;
-        padding: 4px;
-        text-align: center;
-        color: #FFF;
-        font-weight: bold;
-        letter-spacing: 0.05em;
-    }
-
-    .box1 p {
-        padding: 15px 20px;
-        margin: 0;
-    }
-
-    .box1 .left {
-        float: left;
-        width: 100px;
-    }
-
-    .box1 .right {
-        float: right;
-        width: 200px;
     }
 </style>
 
