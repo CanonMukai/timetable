@@ -327,6 +327,7 @@ def KomaDataList(model, class_dict):
     solver = neal.SimulatedAnnealingSampler()
     response = solver.sample_qubo(Q, num_sweeps=model.steps, num_reads=model.reads)
     koma_data_list = []
+    table_id = 1
     for sample0, energy0 in response.data(fields=['sample', 'energy']):
         koma_data = {}
         for key, val in sample0.items():
@@ -356,12 +357,14 @@ def KomaDataList(model, class_dict):
             score_strict = ScoreStrict(perfect, broken4, broken6, penalty4, penalty6)
             sum_of_scores = sum([score_for_students, score_for_teachers, score_strict])
             koma_data_list.append({
+                'table_id': table_id,
                 'koma_data': koma_data,
                 'sum': sum_of_scores,
                 'students': score_for_students,
                 'teachers': score_for_teachers,
                 'strict': score_strict,
             })
+            table_id += 1
     # koma_dataを得点の高い順に並べかえる
     koma_data_list.sort(key=lambda x: -x['sum'])
     model.koma_data_list = json.dumps(koma_data_list)

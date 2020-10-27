@@ -224,8 +224,10 @@ def success(request):
         new_class_table_list = changed(class_table_list)
         t.class_table_list_for_display = json.dumps(new_class_table_list)
         t.save()
+        koma_data_list = ast.literal_eval(t.koma_data_list)
         params = {
             'candidates': [i + 1 for i in range(len(new_class_table_list))],
+            'info_list': koma_data_list,
         }
         return render(request, 'make/success.html', params)
 
