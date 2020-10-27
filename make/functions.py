@@ -342,7 +342,7 @@ def KomaDataList(model, class_dict):
             broken4 = is_satisfied_4(renzoku_ID, renzoku_koma, koma_data)
             broken5, display5 = is_satisfied_5(one_per_day, table, koma_data, class_dict)
             broken6 = is_satisfied_6(joint, koma_data)
-            broken7 = is_satisfied_7(one_per_gen, gen_list, koma_data)
+            broken7, display7 = is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict)
             broken8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
             # 条件の重み
             penalty3 = 5
@@ -365,6 +365,7 @@ def KomaDataList(model, class_dict):
                 'strict': score_strict,
                 'display3': display3,
                 'display5': display5,
+                'display7': display7,
             })
             table_id += 1
     # koma_dataを得点の高い順に並べかえる
@@ -584,7 +585,7 @@ def is_satisfied_6(joint, koma_data):
     return broken
 
 # 第7項：各科目が同じ時間帯に固まらないようにする
-def is_satisfied_7(one_per_gen, gen_list, koma_data):
+def is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict):
     broken = set()
     for IDs in one_per_gen:
         for day in gen_list:
@@ -597,7 +598,16 @@ def is_satisfied_7(one_per_gen, gen_list, koma_data):
     if broken:
         print("制約7破り：同じ時間帯に入っている授業群")
         print(broken)
-    return broken
+    display = []
+    for IDs in list(broken):
+        name = class_dict[IDs[0]]['NAME']
+        class_name = ', '.join(class_dict[IDs[0]]['CLASS'])
+        display.append({
+            'name': name,
+            'class': class_name,
+        })
+    display.sort(key=lambda x: x['class'])
+    return broken, display
 
 # 第8項：1教員が3コマ連続にならないようにする
 def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
