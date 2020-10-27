@@ -26,7 +26,14 @@
     <div class="student">
         <div class="title mb-3">生徒の負担　{{ info.students }} 点</div>
         <div class="m-3">
-            <p>1日に複数同じ科目あり</p>
+            {% if info.display5 %}
+            <h6>1日に複数入ってしまっている科目</h6>
+            <div class="m-3">
+                {% for i in info.display5 %}
+                <li>{{ i.class }}クラスの{{ i.name }}</li>
+                {% endfor %}
+            </div>
+            {% endif %}
             <p>1限, お昼休み後に同じ科目が多い</p>
         </div>
     </div>

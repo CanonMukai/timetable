@@ -340,7 +340,7 @@ def KomaDataList(model, class_dict):
             # 制約を満たさなかった群
             broken3, display3 = is_satisfied_3(convenience, koma_data, model)
             broken4 = is_satisfied_4(renzoku_ID, renzoku_koma, koma_data)
-            broken5 = is_satisfied_5(one_per_day, table, koma_data)
+            broken5, display5 = is_satisfied_5(one_per_day, table, koma_data, class_dict)
             broken6 = is_satisfied_6(joint, koma_data)
             broken7 = is_satisfied_7(one_per_gen, gen_list, koma_data)
             broken8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
@@ -364,6 +364,7 @@ def KomaDataList(model, class_dict):
                 'teachers': score_for_teachers,
                 'strict': score_strict,
                 'display3': display3,
+                'display5': display5,
             })
             table_id += 1
     # koma_dataを得点の高い順に並べかえる
@@ -543,7 +544,11 @@ def is_satisfied_4(renzoku_ID, renzoku_koma, koma_data):
     return broken
 
 # 第5項：各科目は1日1コマ
-def is_satisfied_5(one_per_day, table, koma_data):
+def is_satisfied_5(one_per_day, table, koma_data, class_dict):
+    """
+    broken: {(0, 1, 2), (3, 4, 5)}
+    display: [{'name': '国語', 'class': '1A'}, {'name': '数学', 'class': '1B'}]
+    """
     broken = set()
     for IDs in one_per_day:
         for day in table:
@@ -556,7 +561,16 @@ def is_satisfied_5(one_per_day, table, koma_data):
     if broken:
         print("制約5破り：1日に1コマ以上入っている授業群")
         print(broken)
-    return broken
+    display = []
+    for IDs in list(broken):
+        name = class_dict[IDs[0]]['NAME']
+        class_name = ', '.join(class_dict[IDs[0]]['CLASS'])
+        display.append({
+            'name': name,
+            'class': class_name,
+        })
+    display.sort(key=lambda x: x['class'])
+    return broken, display
 
 # 第6項：2クラス合同
 def is_satisfied_6(joint, koma_data):
