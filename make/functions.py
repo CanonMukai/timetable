@@ -586,6 +586,10 @@ def is_satisfied_6(joint, koma_data):
 
 # 第7項：各科目が同じ時間帯に固まらないようにする
 def is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict):
+    """
+    broken: {(0, 1, 2), (3, 4, 5)}
+    display: [{'name': '国語', 'class': '1A'}, {'name': '数学', 'class': '1B'}]
+    """
     broken = set()
     for IDs in one_per_gen:
         for day in gen_list:
