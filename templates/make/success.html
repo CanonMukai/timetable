@@ -24,8 +24,11 @@
                     <li>{{ teacher }} 先生：{{ koma }}に授業あり</li>
                     {% endfor %}
                 </div>
+                {% else %}
+                <div class="m-3">
+                    制約破りはありません！
+                </div>
                 {% endif %}
-                <h6>3コマ連続</h6>
             </div>
         </div>
         <!-- 先生の負担 -->
@@ -38,6 +41,10 @@
                     {% for teacher, koma in info.display3.items %}
                     <li>{{ teacher }} 先生：{{ koma }}に授業あり</li>
                     {% endfor %}
+                </div>
+                {% else %}
+                <div class="m-3">
+                    制約破りはありません！
                 </div>
                 {% endif %}
                 <h6>3コマ連続</h6>
@@ -63,6 +70,11 @@
                     {% for i in info.display7 %}
                     <li>{{ i.class }}クラスの{{ i.name }}</li>
                     {% endfor %}
+                </div>
+                {% endif %}
+                {% if not info.display5 and not info.display7 %}
+                <div class="m-3">
+                    制約破りはありません！
                 </div>
                 {% endif %}
             </div>
