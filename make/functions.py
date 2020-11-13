@@ -312,7 +312,7 @@ def KomaDataList(model, class_dict):
     renzoku_3koma = Renzoku3Koma(model)
     not_renzoku_ID = NotRenzokuID(model, class_dict)
     perfect = PerfectScore()
-    w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 9, 1, 6, 1, 4
+    w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 4, 9, 1, 6, 1, 4
     Q, constant, A = Hamiltonian(
         class_dict,
         model.weekly, total, 
@@ -327,7 +327,6 @@ def KomaDataList(model, class_dict):
     solver = neal.SimulatedAnnealingSampler()
     response = solver.sample_qubo(Q, num_sweeps=model.steps, num_reads=model.reads)
     koma_data_list = []
-    table_id = 1
     for sample0, energy0 in response.data(fields=['sample', 'energy']):
         koma_data = {}
         for key, val in sample0.items():
@@ -357,7 +356,6 @@ def KomaDataList(model, class_dict):
             score_strict = ScoreStrict(perfect, broken4, broken6, penalty4, penalty6)
             sum_of_scores = sum([score_for_students, score_for_teachers, score_strict])
             koma_data_list.append({
-                'table_id': table_id,
                 'koma_data': koma_data,
                 'sum': sum_of_scores,
                 'students': score_for_students,
@@ -367,9 +365,10 @@ def KomaDataList(model, class_dict):
                 'display5': display5,
                 'display7': display7,
             })
-            table_id += 1
     # koma_dataを得点の高い順に並べかえる
     koma_data_list.sort(key=lambda x: -x['sum'])
+    for i in range(len(koma_data_list)):
+        koma_data_list[i]['table_id'] = i + 1
     model.koma_data_list = json.dumps(koma_data_list)
     model.save()
     return koma_data_list
