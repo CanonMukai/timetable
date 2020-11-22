@@ -108,7 +108,7 @@ def Hamiltonian(class_dict,
                     A[k1, k2] += (w2 + plus2)
     # 第3項：制約条件（教員の都合を反映）
     for con in convenience:
-        # convenience：[[ID, c], [ID, c], ...]
+        # convenience：[[ID, c, teacher_name], [ID, c, teacher_name], ...]
         i, a = con[0], con[1]
         k = weekly * i + a
         A[k, k] += w3
@@ -155,7 +155,7 @@ def Hamiltonian(class_dict,
                                 A[k1, k2] += w7
     # 第8項：制約条件（1教員が3コマ連続にならないようにする）
     for ID_list in not_renzoku_ID:
-        ID2 = list(itertools.combinations(ID_list, 2))
+        ID2 = list(itertools.combinations(ID_list['IDs'], 2))
         for IDs in ID2:
             for koma2 in renzoku_2koma:
                 k1 = weekly * IDs[0] + koma2[0]
@@ -312,7 +312,7 @@ def KomaDataList(model, class_dict):
     renzoku_3koma = Renzoku3Koma(model)
     not_renzoku_ID = NotRenzokuID(model, class_dict)
     perfect = PerfectScore()
-    w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 2, 9, 1, 6, 1, 4
+    w1, w2, w3, w4, w5, w6, w7, w8 = 2, 4, 4, 9, 1, 6, 1, 4
     Q, constant, A = Hamiltonian(
         class_dict,
         model.weekly, total, 
@@ -337,12 +337,12 @@ def KomaDataList(model, class_dict):
         # 基本制約を満たしていれば次のステップ(得点の計算)へ
         if is_satisfied_2(koma_data, total) and is_satisfied_1(adjacent, joint, koma_data):
             # 制約を満たさなかった群
-            broken3 = is_satisfied_3(convenience, koma_data)
+            broken3, display3 = is_satisfied_3(convenience, koma_data, model)
             broken4 = is_satisfied_4(renzoku_ID, renzoku_koma, koma_data)
-            broken5 = is_satisfied_5(one_per_day, table, koma_data)
+            broken5, display5 = is_satisfied_5(one_per_day, table, koma_data, class_dict)
             broken6 = is_satisfied_6(joint, koma_data)
-            broken7 = is_satisfied_7(one_per_gen, gen_list, koma_data)
-            broken8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
+            broken7, display7 = is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict)
+            broken8, display8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
             # 条件の重み
             penalty3 = 5
             penalty4 = 5
@@ -361,9 +361,15 @@ def KomaDataList(model, class_dict):
                 'students': score_for_students,
                 'teachers': score_for_teachers,
                 'strict': score_strict,
+                'display3': display3,
+                'display5': display5,
+                'display7': display7,
+                'display8': display8,
             })
     # koma_dataを得点の高い順に並べかえる
     koma_data_list.sort(key=lambda x: -x['sum'])
+    for i in range(len(koma_data_list)):
+        koma_data_list[i]['table_id'] = i + 1
     model.koma_data_list = json.dumps(koma_data_list)
     model.save()
     return koma_data_list
@@ -395,7 +401,7 @@ def Convenience(model, class_dict):
         for teacher in con:
             if teacher in info['TEACHER']:
                 for koma in con[teacher]:
-                    convenience.append([ID, koma])
+                    convenience.append([ID, koma, teacher])
     return convenience
 
 def OnePerDay(one_per_gen, renzoku_ID):
@@ -469,8 +475,8 @@ def NotRenzokuID(model, class_dict):
             else:
                 classes[teacher] = [ID]
     not_renzoku_ID = []
-    for c, class_list in classes.items():
-        not_renzoku_ID.append(class_list)
+    for teacher, class_list in classes.items():
+        not_renzoku_ID.append({'teacher': teacher, 'IDs': class_list})
     return not_renzoku_ID
 
 # 制約破り判定
@@ -501,16 +507,30 @@ def is_satisfied_2(koma_data, total):
 
 # 第3項：教員の都合を反映
 # 以下第8項まで、jupyterのときと違いsatisfiedではなくbrokenを返すことにする
-def is_satisfied_3(convenience, koma_data):
+def is_satisfied_3(convenience, koma_data, model):
+    """
+    broken: [[ID, コマ, teacher_name], [ID, コマ, teacher_name], ... ]
+    display: {'鈴木': '月1 火2 ', '佐藤': '月1 月2 '}
+    """
     broken = []
     for con in convenience:
-        ID, koma = con[0], con[1]
+        ID, koma, teacher = con[0], con[1], con[2]
         if koma_data[ID] == koma:
-            broken.append("ID: {}, コマ: {}".format(ID, koma))
+            broken.append(con)
     if broken:
         print("制約3破り：都合が反映されていない授業IDとそのコマ")
         print(broken)
-    return broken
+    # '月2 月1'のように順番があべこべにならないようbrokenをコマで並べ替えておく
+    broken.sort(key=lambda x: x[1])
+    display = {}
+    gen_dict = ast.literal_eval(model.gen_dict)
+    for b in broken:
+        ID, koma, teacher = b[0], b[1], b[2]
+        if teacher in display:
+            display[teacher] += gen_dict[str(koma)] + ' '
+        else:
+            display[teacher] = gen_dict[str(koma)] + ' '
+    return broken, display
 
 # 第4項：2時間続きにしたい授業
 def is_satisfied_4(renzoku_ID, renzoku_koma, koma_data):
@@ -525,7 +545,11 @@ def is_satisfied_4(renzoku_ID, renzoku_koma, koma_data):
     return broken
 
 # 第5項：各科目は1日1コマ
-def is_satisfied_5(one_per_day, table, koma_data):
+def is_satisfied_5(one_per_day, table, koma_data, class_dict):
+    """
+    broken: {(0, 1, 2), (3, 4, 5)}
+    display: [{'name': '国語', 'class': '1A'}, {'name': '数学', 'class': '1B'}]
+    """
     broken = set()
     for IDs in one_per_day:
         for day in table:
@@ -538,7 +562,16 @@ def is_satisfied_5(one_per_day, table, koma_data):
     if broken:
         print("制約5破り：1日に1コマ以上入っている授業群")
         print(broken)
-    return broken
+    display = []
+    for IDs in list(broken):
+        name = class_dict[IDs[0]]['NAME']
+        class_name = ', '.join(class_dict[IDs[0]]['CLASS'])
+        display.append({
+            'name': name,
+            'class': class_name,
+        })
+    display.sort(key=lambda x: x['class'])
+    return broken, display
 
 # 第6項：2クラス合同
 def is_satisfied_6(joint, koma_data):
@@ -552,7 +585,11 @@ def is_satisfied_6(joint, koma_data):
     return broken
 
 # 第7項：各科目が同じ時間帯に固まらないようにする
-def is_satisfied_7(one_per_gen, gen_list, koma_data):
+def is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict):
+    """
+    broken: {(0, 1, 2), (3, 4, 5)}
+    display: [{'name': '国語', 'class': '1A'}, {'name': '数学', 'class': '1B'}]
+    """
     broken = set()
     for IDs in one_per_gen:
         for day in gen_list:
@@ -565,13 +602,28 @@ def is_satisfied_7(one_per_gen, gen_list, koma_data):
     if broken:
         print("制約7破り：同じ時間帯に入っている授業群")
         print(broken)
-    return broken
+    display = []
+    for IDs in list(broken):
+        name = class_dict[IDs[0]]['NAME']
+        class_name = ', '.join(class_dict[IDs[0]]['CLASS'])
+        display.append({
+            'name': name,
+            'class': class_name,
+        })
+    display.sort(key=lambda x: x['class'])
+    return broken, display
 
 # 第8項：1教員が3コマ連続にならないようにする
 def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
+    """
+    broken: {(0, 1, 2), (3, 4, 5)}
+    display: [{'name': '国語', 'class': '1A'}, {'name': '数学', 'class': '1B'}]
+    """
     broken = []
+    display = []
     for IDs in not_renzoku_ID:
-        ID3s = list(itertools.combinations(IDs, 3))
+        ID3s = list(itertools.combinations(IDs['IDs'], 3))
+        teacher = IDs['teacher']
         for ID in ID3s:
             komas = [koma_data[ID[0]], koma_data[ID[1]], koma_data[ID[2]]]
             komas.sort()
@@ -579,11 +631,12 @@ def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
                 for t in table:
                     if komas[0] in t and komas[1] in t and komas[2] in t:
                         broken.append(ID)
+                        display.append({'teacher': teacher, 'komas': komas})
                         break
     if broken:
         print("制約8破り：1教員が3コマ連続になっている授業群")
         print(broken)
-    return broken
+    return broken, display
 
 # 制約の個数から基準にする満点を算出
 def PerfectScore():

@@ -1,9 +1,182 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block contents %}
+{% for info in info_list %}
 
-{% for candidate in candidates %}
-<h5 class="ml-3"><a href="{% url 'make:each' candidate %}">時間割の候補 No.{{ candidate }} </a><span class="badge badge-primary">Good</span></h5>
+<div class="container mt-3 mb-5">
+    <div class="mt-3">
+        <h4>時間割の候補 No.{{ info.table_id }}　<a href="{% url 'make:each' info.table_id %}">時間割表を見る</a></h4>
+    </div>
+    <!-- 総合評価 -->
+    <div class="judge">
+        <h2>総合評価　{{ info.sum }} 点</h2>
+    </div>
+    <!-- 破られた制約の表示 -->
+    <div class="out">
+        <!-- 重要な制約 -->
+        <div class="left">
+            <div class="title"><b>重要な制約　{{ info.strict }} 点</b></div>
+            <div class="m-3">
+                {% if info.display3 %}
+                <h6>満たされていない先生の都合</h6>
+                <div class="m-3">
+                    {% for teacher, koma in info.display3.items %}
+                    <li>{{ teacher }} 先生：{{ koma }}に授業あり</li>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="m-3">
+                    制約破りはありません！
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- 先生の負担 -->
+        <div class="center">
+            <div class="title">先生の負担　{{ info.teachers }} 点</div>
+            <div class="m-3">
+                {% if info.display8 %}
+                <h6>3コマ連続</h6>
+                <div class="m-3">
+                    {{ info.display8 }}
+                    {% for teacher, koma in info.display8.items %}
+                    <li>{{ teacher }} 先生：{{ koma }}が3連続</li>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="m-3">
+                    先生方に優しい時間割です！
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <!-- 生徒の負担 -->
+        <div class="right">
+            <div class="title">生徒の負担　{{ info.students }} 点</div>
+            <div class="m-3">
+                <!-- 制約5 -->
+                {% if info.display5 %}
+                <h6>1日に複数入ってしまっている科目</h6>
+                <div class="m-3">
+                    {% for i in info.display5 %}
+                    <li>{{ i.class }}クラスの{{ i.name }}</li>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <!-- 制約7 -->
+                {% if info.display7 %}
+                <h6>1限, お昼休み後に同じ科目が多い</h6>
+                <div class="m-3">
+                    {% for i in info.display7 %}
+                    <li>{{ i.class }}クラスの{{ i.name }}</li>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                {% if not info.display5 and not info.display7 %}
+                <div class="m-3">
+                    制約破りはありません！
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="box-clear">
+        </div>
+    </div>
+</div>
 {% endfor %}
+
+<style>
+    .out {
+        width: 100%;
+        background-color: rgb(195, 255, 255);
+        color: rgb(53, 53, 53);
+        padding: 0.5cm;
+        margin-bottom: 0.5em;
+        border-radius: 15px;
+    }
+
+    .left {
+        /* background-color: green; */
+        float: left;
+        width: 33%;
+        margin-right: 0.5%;
+    }
+
+    .right {
+        /* background-color: red; */
+        float: left;
+        width: 33%;
+    }
+
+    .center {
+        /* background-color: yellow; */
+        float: left;
+        width: 33%;
+        margin-right: 0.5%;
+    }
+
+    .title {
+        text-align: center;
+        font-size: 25px;
+    }
+
+    .judge {
+        background-color: blue;
+        color: white;
+        text-align: center;
+        padding: 0.5cm;
+        margin-bottom: 0.5em;
+        width: 100%;
+        border-radius: 15px;
+    }
+
+    .important {
+        background-color: rgb(195, 255, 255);
+        color: rgb(53, 53, 53);
+        padding: 0.5cm;
+        margin-bottom: 0.5em;
+        width: 100%;
+        border-radius: 15px;
+    }
+
+    .important .title {
+        /* text-align: center; */
+        font-size: 25px;
+    }
+
+    .teacher {
+        float: left;
+        background-color: #00b7ff;
+        color: white;
+        padding: 0.5em;
+        margin-right: 1%;
+        width: 49.5%;
+        border-radius: 15px;
+    }
+
+    .teacher .title {
+        text-align: center;
+        font-size: 25px;
+    }
+
+    .student {
+        float: left;
+        background-color: rgb(34, 206, 154);
+        color: white;
+        padding: 0.5em;
+        width: 49.5%;
+        border-radius: 15px;
+    }
+
+    .student .title {
+        text-align: center;
+        font-size: 25px;
+    }
+
+    .box-clear {
+        clear: both;
+        height: 50px;
+    }
+</style>
 
 {% endblock contents %}
