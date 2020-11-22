@@ -35,16 +35,17 @@
         <div class="center">
             <div class="title">先生の負担　{{ info.teachers }} 点</div>
             <div class="m-3">
-                {% if info.display3 %}
-                <h6>満たされていない先生の都合</h6>
+                {% if info.display8 %}
+                <h6>3コマ連続</h6>
                 <div class="m-3">
-                    {% for teacher, koma in info.display3.items %}
-                    <li>{{ teacher }} 先生：{{ koma }}に授業あり</li>
+                    {{ info.display8 }}
+                    {% for teacher, koma in info.display8.items %}
+                    <li>{{ teacher }} 先生：{{ koma }}が3連続</li>
                     {% endfor %}
                 </div>
                 {% else %}
                 <div class="m-3">
-                    制約破りはありません！
+                    先生方に優しい時間割です！
                 </div>
                 {% endif %}
             </div>

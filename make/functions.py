@@ -155,7 +155,7 @@ def Hamiltonian(class_dict,
                                 A[k1, k2] += w7
     # 第8項：制約条件（1教員が3コマ連続にならないようにする）
     for ID_list in not_renzoku_ID:
-        ID2 = list(itertools.combinations(ID_list, 2))
+        ID2 = list(itertools.combinations(ID_list['IDs'], 2))
         for IDs in ID2:
             for koma2 in renzoku_2koma:
                 k1 = weekly * IDs[0] + koma2[0]
@@ -342,7 +342,7 @@ def KomaDataList(model, class_dict):
             broken5, display5 = is_satisfied_5(one_per_day, table, koma_data, class_dict)
             broken6 = is_satisfied_6(joint, koma_data)
             broken7, display7 = is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict)
-            broken8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
+            broken8, display8 = is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data)
             # 条件の重み
             penalty3 = 5
             penalty4 = 5
@@ -364,6 +364,7 @@ def KomaDataList(model, class_dict):
                 'display3': display3,
                 'display5': display5,
                 'display7': display7,
+                'display8': display8,
             })
     # koma_dataを得点の高い順に並べかえる
     koma_data_list.sort(key=lambda x: -x['sum'])
@@ -474,8 +475,8 @@ def NotRenzokuID(model, class_dict):
             else:
                 classes[teacher] = [ID]
     not_renzoku_ID = []
-    for c, class_list in classes.items():
-        not_renzoku_ID.append(class_list)
+    for teacher, class_list in classes.items():
+        not_renzoku_ID.append({'teacher': teacher, 'IDs': class_list})
     return not_renzoku_ID
 
 # 制約破り判定
@@ -614,9 +615,15 @@ def is_satisfied_7(one_per_gen, gen_list, koma_data, class_dict):
 
 # 第8項：1教員が3コマ連続にならないようにする
 def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
+    """
+    broken: {(0, 1, 2), (3, 4, 5)}
+    display: [{'name': '国語', 'class': '1A'}, {'name': '数学', 'class': '1B'}]
+    """
     broken = []
+    display = []
     for IDs in not_renzoku_ID:
-        ID3s = list(itertools.combinations(IDs, 3))
+        ID3s = list(itertools.combinations(IDs['IDs'], 3))
+        teacher = IDs['teacher']
         for ID in ID3s:
             komas = [koma_data[ID[0]], koma_data[ID[1]], koma_data[ID[2]]]
             komas.sort()
@@ -624,11 +631,12 @@ def is_satisfied_8(table, not_renzoku_ID, renzoku_3koma, koma_data):
                 for t in table:
                     if komas[0] in t and komas[1] in t and komas[2] in t:
                         broken.append(ID)
+                        display.append({'teacher': teacher, 'komas': komas})
                         break
     if broken:
         print("制約8破り：1教員が3コマ連続になっている授業群")
         print(broken)
-    return broken
+    return broken, display
 
 # 制約の個数から基準にする満点を算出
 def PerfectScore():
