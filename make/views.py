@@ -105,9 +105,15 @@ def constraint(request):
         'days': ['月', '火', '水', '木', '金', '土'][:length],
         'tabledict': table_dict,
         'jugyo': jugyo_dict,
+        'gen_dict': gen_dict,
     }
     if request.method == 'POST':
-        post_set = {'add', 'clear', 'clear-all', 'add4', 'add4-same', 'clear-all4'}
+        print(request.POST)
+        post_set = {
+            'add', 'clear', 'clear-all',
+            'add4', 'add4-same', 'clear-all4',
+            'fix', 'clear-fix', 'clear-fix-all',
+        }
         if post_set & set(request.POST):
             # TODO: 戻るボタンを押されたときの挙動 現在追加済みの休むコマが誤って表示される
             # 制約3: 先生の都合の取得
@@ -180,6 +186,31 @@ def constraint(request):
                     con4_display = {}
                 t.renzoku_ID = json.dumps(renzoku_ID)
                 t.con4_display = json.dumps(con4_display)
+            if {'fix', 'clear-fix', 'clear-fix-all'} & set(request.POST):
+                if 'fix' in request.POST:
+                    cell_list = json.loads(t.cell_list)
+                    pre_fix = ast.literal_eval(t.pre_fix)
+                    class1, name1 = map(str, request.POST['fix_class'].split())
+                    koma = int(request.POST['fix_koma'])
+                    for i in range(len(cell_list)):
+                        if cell_list[i][1] == name1 and cell_list[i][2] == class1:
+                            # 複数同じ授業がある場合、一つの授業のみに適用される
+                            pre_fix[i * t.weekly + koma] = 1
+                            t.pre_fix = json.dumps(pre_fix)
+                            fix_display = ast.literal_eval(t.fix_display)
+                            info = {
+                                'name': '{}（{}）'.format(name1, class1),
+                                'koma': gen_dict[koma],
+                                'id': i * t.weekly + koma,
+                            }
+                            if info not in fix_display:
+                                fix_display.append(info)
+                            t.fix_display = json.dumps(fix_display)
+                            break
+                elif 'clear-fix-all' in request.POST:
+                    t.pre_fix = json.dumps({})
+                    t.fix_display = json.dumps([])
+            print('t.prefix = ' + str(ast.literal_eval(t.pre_fix)))
             t.save()
             # 表示部分
             # 各教員の休むコマ
@@ -191,6 +222,8 @@ def constraint(request):
             params['con3'] = con3_gen
             # 2時間連続のコマ
             params['renzoku'] = con4_display
+            # fixする授業
+            params['fix'] = ast.literal_eval(t.fix_display)
             return render(request, 'make/constraint.html', params)
         elif 'make' in request.POST:
             t.steps = int(request.POST['steps'])
@@ -216,6 +249,7 @@ def constraint(request):
             t.teacher_table_list = json.dumps(teacher_table_list)
             t.save()
             return HttpResponseRedirect(reverse('make:success'))
+        return render(request, 'make/constraint.html', params)
     else:
         return render(request, 'make/constraint.html', params)
 

@@ -34,6 +34,15 @@ class TimeTable(models.Model):
     {'0,9 1,10 2,11': '国語（1A）と国語（1B）', '3,4 5,6': '英語（1A）'}
     """
 
+    pre_fix = models.TextField(default=json.dumps({}))
+    """
+    {ID * weekly + koma: 1, ID * weekly + koma: 1, ... }
+    """
+    fix_display = models.TextField(default=json.dumps([]))
+    """
+    [{'name': '国語（A）', 'koma': '月1', 'id': 0}, ... ]
+    """
+
     steps = models.IntegerField(default=1000)
     reads = models.IntegerField(default=10)
     class_table_list = models.TextField(null=True)
