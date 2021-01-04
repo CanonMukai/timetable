@@ -4,6 +4,54 @@
 
 <form action="" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
+    <!-- 固定授業 -->
+    <div class="alert alert-primary mt-3" role="alert">
+        あらかじめコマを指定する授業を選択してください（HRは水曜5限にする、など）
+    </div>
+    <div class="form-row align-items-center ml-3">
+        <div class="col-auto ml-3">
+            <select class="custom-select mr-sm-2 mb-2" id="fix_class" name="fix_class">
+                {% for key, value in jugyo.items %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto mt-1">
+            <p>を</p>
+        </div>
+        <div class="col-auto ml-3">
+            <select class="custom-select mr-sm-2 mb-2" id="fix_koma" name="fix_koma">
+                {% for key, value in gen_dict.items %}
+                <option value="{{ key }}">{{ value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-auto mt-1">
+            <p>限に指定</p>
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-secondary mb-2" name="fix">追加</button>
+        </div>
+    </div>
+    <!-- 加えたfix授業の表示 -->
+    <div class="m-3" style="background-color: whitesmoke;">
+        {% if fix %}
+        <div class="m-3">
+            <p>現在追加済みのコマ指定の授業</p>
+        </div>
+        <div class="m-3">
+            {% for f in fix %}
+            <li class="m-3">{{ f.name }} ： {{ f.koma }}限　<button type="submit" class="btn btn-outline-secondary btn-sm"
+                    id="clear-fix" name="clear-fix" value="{{ f.id }}" disabled>取り消す</button></li>
+            {% endfor %}
+        </div>
+        <div class="m-3">
+            <button type="submit" class="btn btn-outline-secondary btn-sm" id="clear-fix-all"
+                name="clear-fix-all">全コマ指定の授業を取り消す</button>
+        </div>
+        {% endif %}
+    </div>
+
     <!-- 教員の都合追加 -->
     <div class="alert alert-primary mt-3" role="alert">
         教員名とその教員が休みをとるコマを選択し、「追加」を押してください
@@ -93,7 +141,9 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="col-auto mt-1"><p>と</p></div>
+        <div class="col-auto mt-1">
+            <p>と</p>
+        </div>
         <div class="col-auto ml-3">
             <label class="mr-sm-2 sr-only" for="jugyo2">Preference</label>
             <select class="custom-select mr-sm-2 mb-2" id="jugyo2" name="jugyo2">

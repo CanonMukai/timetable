@@ -3,6 +3,7 @@ import openpyxl
 import json
 import numpy as np
 import neal
+import dimod
 import ast
 import itertools
 
@@ -325,9 +326,21 @@ def KomaDataList(model, class_dict):
         renzoku_2koma, not_renzoku_ID,
         w1=w1, w2=w2, w3=w3, w4=w4, w5=w5, w6=w6, w7=w7, w8=w8)
     solver = neal.SimulatedAnnealingSampler()
-    response = solver.sample_qubo(Q, num_sweeps=model.steps, num_reads=model.reads)
+    bqm = dimod.BinaryQuadraticModel.from_qubo(Q, offset = 0.0)
+    # 事前にfixする授業の設定
+    pre_fix_source = ast.literal_eval(model.pre_fix)
+    pre_fix = {}
+    for key, value in pre_fix_source.items():
+        pre_fix[int(key)] = value
+    print(pre_fix)
+    bqm.fix_variables(pre_fix)
+    response = solver.sample(bqm, num_sweeps=model.steps, num_reads=model.reads)
+    # response = solver.sample_qubo(Q, num_sweeps=model.steps, num_reads=model.reads)
     koma_data_list = []
     for sample0, energy0 in response.data(fields=['sample', 'energy']):
+        # fixしていた授業をsample0に戻す
+        for key, value in pre_fix.items():
+            sample0[key] = value
         koma_data = {}
         for key, val in sample0.items():
             if val == 1:
