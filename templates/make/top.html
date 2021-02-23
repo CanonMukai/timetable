@@ -1,0 +1,56 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>じかんわり</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+</head>
+
+<body>
+    <a href="{% url 'make:make' %}" class="btn btn--orange btn--circle btn--circle-a btn--shadow mt-5">時間割を作成する</a>
+</body>
+
+<style>
+    body {
+        background-image: url("{% static 'images/room2.png' %}");
+        background-color: rgba(255, 255, 255, 0.9);
+        background-blend-mode: lighten;
+        display: flex;
+        text-align: center;
+    }
+
+    a {
+        width: auto;
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    a.btn--orange {
+        color: #fff;
+        background-color: #eb6100;
+    }
+
+    a.btn--orange:hover {
+        color: #fff;
+        background: #f56500;
+    }
+
+    a.btn--shadow {
+        -webkit-box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 3px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    a.btn--circle {
+        border-radius: 50%;
+        line-height: 200px;
+        width: 200px;
+        height: 200px;
+        padding: 0;
+    }
+</style>
+
+</html>
